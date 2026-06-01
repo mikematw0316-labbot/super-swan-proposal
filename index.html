@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Swan × 天成 | 系統拆解與產品優化分析提案</title>
+<meta name="description" content="針對天成包網系統進行系統性拆解，與 Super Swan 現有產品進行交叉對標分析">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        teal: { DEFAULT: '#00e5c8', dim: '#00c9ae', dark: '#007a69' },
+        navy: { DEFAULT: '#060d12', mid: '#0c1a22', card: '#0f2029', border: '#1a3040' },
+        purple: { DEFAULT: '#7c5cfc', dim: '#5a3fd4' },
+        text: { base: '#e8eef2', muted: '#7d9cad', faint: '#3d5a6a' },
+      },
+      fontFamily: {
+        headline: ['Space Grotesk', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+        body: ['Noto Sans TC', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: #060d12; color: #e8eef2; font-family: 'Noto Sans TC', sans-serif; overflow-x: hidden; }
+
+/* Noise */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* Glass card */
+.glass {
+  background: rgba(15, 32, 41, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 229, 200, 0.08);
+}
+.glass:hover {
+  border-color: rgba(0, 229, 200, 0.2);
+  box-shadow: 0 0 40px rgba(0, 229, 200, 0.04);
+}
+
+/* Teal glow */
+.teal-glow { text-shadow: 0 0 30px rgba(0,229,200,0.5); }
+.teal-glow-sm { text-shadow: 0 0 16px rgba(0,229,200,0.4); }
+
+/* Scan line */
+.scanline::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(180deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  z-index: 1;
+}
+
+/* Glowing line */
+@keyframes glow-sweep { 0%,100%{opacity:.3;} 50%{opacity:1;} }
+.glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00e5c8, transparent);
+  animation: glow-sweep 3s ease-in-out infinite;
+}
+
+/* Floating */
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
+.float { animation: float 6s ease-in-out infinite; }
+
+/* Pulse dot */
+@keyframes pdot { 0%,100%{opacity:1;} 50%{opacity:.25;} }
+.pdot { animation: pdot 2s ease-in-out infinite; }
+
+/* Reveal */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+.reveal.on { opacity: 1; transform: none; }
+.d1 { transition-delay: .08s; } .d2 { transition-delay: .16s; } .d3 { transition-delay: .24s; }
+
+/* Counter */
+.count-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(0,229,200,0.12); border: 1px solid rgba(0,229,200,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00e5c8;
+  flex-shrink: 0;
+}
+
+/* Tag */
+.tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  background: rgba(0,229,200,0.08); border: 1px solid rgba(0,229,200,0.18); color: #00e5c8;
+}
+.tag-purple {
+  background: rgba(124,92,252,0.1); border-color: rgba(124,92,252,0.25); color: #a78bfa;
+}
+
+/* Section label */
+.sec-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  letter-spacing: .4em; text-transform: uppercase; color: rgba(0,229,200,0.5);
+}
+
+/* Divider bar */
+.bar { width: 3px; height: 20px; border-radius: 2px; background: linear-gradient(180deg,#00e5c8,#7c5cfc); flex-shrink:0; }
+
+/* Price card */
+.price-card {
+  background: linear-gradient(135deg, rgba(0,229,200,0.06), rgba(124,92,252,0.06));
+  border: 1px solid rgba(0,229,200,0.15);
+  border-radius: 16px; padding: 40px;
+}
+
+/* Spinner ring */
+@keyframes spin { from{transform:rotate(0);} to{transform:rotate(360deg);} }
+
+/* Nav */
+nav { background: rgba(6,13,18,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,229,200,0.06); }
+
+/* Laser line */
+@keyframes laser { 0%{left:110%;} 100%{left:-20%;} }
+.laser {
+  position: relative; overflow: hidden;
+  background: linear-gradient(90deg, transparent, rgba(0,229,200,0.4), transparent);
+  height: 1px;
+}
+.laser::after {
+  content: ''; position: absolute; top: -2px; width: 25%; height: 5px;
+  background: linear-gradient(90deg, transparent, #00e5c8, #fff, #00e5c8, transparent);
+  box-shadow: 0 0 18px 4px rgba(0,229,200,1), 0 0 32px 8px rgba(0,229,200,0.5);
+  animation: laser 1.6s linear infinite;
+}
+
+/* Hexagon bg */
+.hex-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 2l26 15v18L30 50 4 35V17z' fill='none' stroke='rgba(0,229,200,0.04)' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 60px 52px;
+}
+</style>
+</head>
+<body class="dark">
+
+<!-- Canvas -->
+<canvas id="cv" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index:0;opacity:.5;"></canvas>
+
+<!-- NAV -->
+<nav class="fixed top-0 z-50 w-full">
+  <div class="max-w-6xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-2 h-2 rounded-full bg-teal pdot" style="box-shadow:0 0 8px #00e5c8;"></div>
+      <span class="font-mono text-[11px] tracking-widest text-teal uppercase">Super Swan × 天成</span>
+    </div>
+    <div class="hidden md:flex items-center gap-6">
+      <a href="#about" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">顧問背景</a>
+      <a href="#scope" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">分析面向</a>
+      <a href="#deliverables" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">預期產出</a>
+      <a href="#pricing" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">報價</a>
+    </div>
+    <div class="tag">提案文件</div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="relative min-h-screen flex items-center pt-20 hex-bg scanline overflow-hidden">
+  <div class="absolute inset-0" style="background:radial-gradient(ellipse 70% 60% at 80% 30%,rgba(0,229,200,0.05),transparent 65%),radial-gradient(ellipse 50% 50% at 15% 70%,rgba(124,92,252,0.06),transparent 60%);"></div>
+
+  <div class="max-w-6xl mx-auto px-6 md:px-8 w-full relative z-10 py-20">
+    <div class="flex flex-col lg:flex-row items-center gap-16">
+
+      <!-- Text -->
+      <div class="lg:w-3/5">
+        <div class="sec-label mb-6 flex items-center gap-3">
+          <span class="w-2 h-2 rounded-full bg-teal pdot" style="box-shadow:0 0 8px #00e5c8;"></span>
+          COMPETITIVE ANALYSIS PROPOSAL · 2026
+        </div>
+
+        <h1 class="font-headline font-bold leading-[1.08] mb-6">
+          <span class="block text-3xl sm:text-4xl md:text-5xl text-transparent bg-clip-text" style="background:linear-gradient(135deg,#00e5c8,#7c5cfc);">Super Swan</span>
+          <span class="block text-2xl sm:text-3xl md:text-4xl text-white mt-1">×&nbsp;天成包網系統</span>
+          <span class="block text-lg sm:text-xl md:text-2xl text-text-muted font-normal mt-2">系統拆解與產品優化分析</span>
+        </h1>
+
+        <p class="text-text-muted text-base leading-relaxed max-w-xl mb-10">
+          針對「天成包網系統」進行系統性拆解，並與 Super Swan 現有產品進行交叉對標分析，協助決策層與 Product Team 快速掌握競品優勢、自家產品落差與後續優化方向。
+        </p>
+
+        <div class="flex flex-wrap gap-3 mb-10">
+          <div class="tag"><span class="material-symbols-outlined text-xs" style="font-size:13px;">analytics</span>前端體驗分析</div>
+          <div class="tag"><span class="material-symbols-outlined text-xs" style="font-size:13px;">manage_accounts</span>後台營運盤點</div>
+          <div class="tag tag-purple"><span class="material-symbols-outlined text-xs" style="font-size:13px;">timer</span>10–14 工作天</div>
+          <div class="tag tag-purple"><span class="material-symbols-outlined text-xs" style="font-size:13px;">paid</span>2,600 USDT</div>
+        </div>
+
+        <a href="#pricing"
+          class="inline-flex items-center gap-2 px-8 py-4 rounded font-headline font-bold text-sm transition-all hover:scale-105"
+          style="background:linear-gradient(135deg,#00e5c8,#00c9ae);color:#060d12;box-shadow:0 0 32px rgba(0,229,200,0.3);">
+          查看完整報價 <span class="material-symbols-outlined text-base">arrow_forward</span>
+        </a>
+      </div>
+
+      <!-- Right visual -->
+      <div class="lg:w-2/5 flex items-center justify-center">
+        <div class="relative w-72 h-72 float">
+          <!-- Rings -->
+          <div class="absolute inset-0 rounded-full border" style="border-color:rgba(0,229,200,0.12);animation:spin 18s linear infinite;"></div>
+          <div class="absolute inset-6 rounded-full border border-dashed" style="border-color:rgba(124,92,252,0.2);animation:spin 12s linear infinite reverse;"></div>
+          <div class="absolute inset-12 rounded-full border" style="border-color:rgba(0,229,200,0.08);"></div>
+          <!-- Glow -->
+          <div class="absolute inset-20 rounded-full" style="background:radial-gradient(circle,rgba(0,229,200,0.15),rgba(124,92,252,0.08),transparent);filter:blur(8px);"></div>
+          <!-- Center -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center">
+              <div class="font-headline font-black text-6xl text-transparent" style="background:linear-gradient(135deg,rgba(0,229,200,0.5),rgba(124,92,252,0.3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">分析</div>
+              <div class="font-mono text-[9px] tracking-[.4em] uppercase mt-1" style="color:rgba(0,229,200,0.4);">Analysis</div>
+            </div>
+          </div>
+          <!-- Orbiting dot -->
+          <div class="absolute inset-0" style="animation:spin 7s linear infinite;">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full" style="background:#00e5c8;box-shadow:0 0 12px #00e5c8,0 0 24px rgba(0,229,200,0.5);"></div>
+          </div>
+          <div class="absolute inset-0" style="animation:spin 11s linear infinite reverse;">
+            <div class="absolute bottom-6 right-6 w-2 h-2 rounded-full" style="background:#7c5cfc;box-shadow:0 0 8px #7c5cfc;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+    <span class="font-mono text-[9px] tracking-widest uppercase" style="color:#00e5c8;">Scroll</span>
+    <div class="w-px h-10" style="background:linear-gradient(180deg,#00e5c8,transparent);"></div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="laser w-full"></div>
+
+<!-- ABOUT CONSULTANT -->
+<section id="about" class="py-20 px-6 md:px-8 relative z-10">
+  <div class="max-w-6xl mx-auto">
+    <div class="sec-label mb-3 reveal">CONSULTANT PROFILE</div>
+    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-12 reveal">顧問經歷背景</h2>
+
+    <!-- Profile photo + intro -->
+    <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-12 glass rounded-2xl p-8 reveal">
+      <div class="flex-shrink-0">
+        <div class="relative w-32 h-32 md:w-40 md:h-40">
+          <div class="absolute inset-0 rounded-full" style="background:linear-gradient(135deg,#00e5c8,#7c5cfc);padding:2px;">
+            <div class="w-full h-full rounded-full overflow-hidden">
+              <img src="profile.jpg" alt="Mike Ma" class="w-full h-full object-cover rounded-full" style="filter:brightness(0.95) contrast(1.05);">
+            </div>
+          </div>
+          <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center" style="background:#00e5c8;box-shadow:0 0 12px #00e5c8;">
+            <span class="material-symbols-outlined" style="font-size:14px;color:#060d12;font-variation-settings:'FILL' 1;">verified</span>
+          </div>
+        </div>
+      </div>
+      <div class="text-center md:text-left">
+        <div class="font-mono text-[10px] tracking-widest uppercase mb-1" style="color:rgba(0,229,200,0.5);">LEAD CONSULTANT</div>
+        <h3 class="font-headline font-bold text-2xl text-white mb-1">Mike Ma</h3>
+        <p class="text-sm mb-4" style="color:#7d9cad;">遊戲產業資深顧問 · 15 年以上跨領域實戰經驗</p>
+        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+          <div class="tag">IGS · 遊戲開發</div>
+          <div class="tag tag-purple">BBIN · 市場協理</div>
+          <div class="tag">AI 應用導入</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-12">
+
+      <!-- IGS Card -->
+      <div class="glass rounded-2xl p-8 reveal d1 transition-all duration-300">
+        <div class="flex items-start gap-5 mb-6">
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,229,200,0.1);border:1px solid rgba(0,229,200,0.2);">
+            <span class="material-symbols-outlined text-teal" style="font-size:28px;font-variation-settings:'FILL' 1;">videogame_asset</span>
+          </div>
+          <div>
+            <div class="font-mono text-[10px] tracking-widest uppercase mb-1" style="color:rgba(0,229,200,0.5);">2016 – 2020</div>
+            <h3 class="font-headline font-bold text-xl text-white">IGS 遊戲開發</h3>
+            <div class="tag mt-2">4 年經驗</div>
+          </div>
+        </div>
+        <p class="text-text-muted text-sm leading-relaxed">
+          具備遊戲產品開發、系統邏輯理解與產品設計經驗，深入理解遊戲平台底層架構與使用者行為模式。
+        </p>
+      </div>
+
+      <!-- BBIN Card -->
+      <div class="glass rounded-2xl p-8 reveal d2 transition-all duration-300">
+        <div class="flex items-start gap-5 mb-6">
+          <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.2);">
+            <span class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1;color:#a78bfa;">trending_up</span>
+          </div>
+          <div>
+            <div class="font-mono text-[10px] tracking-widest uppercase mb-1" style="color:rgba(124,92,252,0.5);">2020 – 2026</div>
+            <h3 class="font-headline font-bold text-xl text-white">BBIN 市場營銷部協理</h3>
+            <div class="tag tag-purple mt-2">11 年經驗</div>
+          </div>
+        </div>
+        <p class="text-text-muted text-sm leading-relaxed">
+          負責市場與系統分析、活動與系統設計、大數據分析、AI 應用導入與產品營運策略規劃。
+        </p>
+      </div>
+    </div>
+
+    <!-- Core competencies -->
+    <div class="glass rounded-2xl p-8 reveal">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="bar"></div>
+        <h3 class="font-headline font-semibold text-lg text-white">核心專長</h3>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[
+          ['analytics','遊戲平台與包網系統分析'],
+          ['route','前端使用者旅程與轉換邏輯拆解'],
+          ['admin_panel_settings','後台營運工具與管理流程盤點'],
+          ['compare_arrows','競品功能對標與產品落差分析'],
+          ['insights','數據導向產品優化建議'],
+          ['smart_toy','AI 輔助產品與營運流程優化'],
+        ].map(([icon, label]) => `
+          <div class="flex items-center gap-3 py-3">
+            <span class="material-symbols-outlined text-base flex-shrink-0" style="color:#00e5c8;font-variation-settings:'FILL' 1;">${icon}</span>
+            <span class="text-text-muted text-sm">${label}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+// Render competencies template
+document.querySelectorAll('[class*="glass rounded-2xl p-8 reveal"]:last-child .grid').forEach(grid => {
+  const items = [
+    ['analytics','遊戲平台與包網系統分析'],
+    ['route','前端使用者旅程與轉換邏輯拆解'],
+    ['admin_panel_settings','後台營運工具與管理流程盤點'],
+    ['compare_arrows','競品功能對標與產品落差分析'],
+    ['insights','數據導向產品優化建議'],
+    ['smart_toy','AI 輔助產品與營運流程優化'],
+  ];
+  grid.innerHTML = items.map(([icon, label]) => `
+    <div class="flex items-center gap-3 py-3 border-b border-white/5">
+      <span class="material-symbols-outlined flex-shrink-0" style="color:#00e5c8;font-variation-settings:'FILL' 1;font-size:18px;">${icon}</span>
+      <span class="text-sm" style="color:#7d9cad;">${label}</span>
+    </div>
+  `).join('');
+});
+</script>
+
+<!-- PROJECT OBJECTIVE -->
+<section class="py-20 px-6 md:px-8 relative z-10" style="background:linear-gradient(180deg,transparent,rgba(0,229,200,0.02),transparent);">
+  <div class="max-w-6xl mx-auto">
+    <div class="sec-label mb-3 reveal">PROJECT OBJECTIVE</div>
+    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-4 reveal">專案目標</h2>
+    <p class="text-text-muted mb-12 max-w-2xl reveal">
+      協助貴司從「產品體驗、營運後台、商業轉化、功能差異」四個角度，全面拆解天成包網系統的產品優勢。
+    </p>
+
+    <!-- 6 Questions Grid -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+      {[
+        ['01','天成系統為何在市場上被評價為「好用」'],
+        ['02','前端體驗優勢來自哪些設計細節'],
+        ['03','後台在營運、代理、會員、報表上有哪些值得借鑑之處'],
+        ['04','貴司現有系統與天成相比，主要落差在哪裡'],
+        ['05','哪些功能或體驗優化具有最高優先級'],
+        ['06','Product Team 後續應如何安排優化方向'],
+      ].map(([n, q]) => `
+        <div class="glass rounded-xl p-5 reveal hover:border-teal/20 transition-all">
+          <div class="count-badge mb-4">${n}</div>
+          <p class="text-sm leading-relaxed" style="color:#7d9cad;">${q}</p>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="glow-line reveal"></div>
+  </div>
+</section>
+
+<script>
+document.querySelectorAll('section').forEach(sec => {
+  const grids = sec.querySelectorAll('.grid');
+  grids.forEach(grid => {
+    // Handle template strings that weren't rendered
+    if (grid.innerHTML.includes('{[')) {
+      grid.innerHTML = '';
+    }
+  });
+});
+
+// Render project questions
+(function(){
+  const sections = document.querySelectorAll('section');
+  let objSec = null;
+  sections.forEach(s => { if (s.querySelector('.sec-label')?.textContent.includes('PROJECT OBJECTIVE')) objSec = s; });
+  if (!objSec) return;
+  const grid = objSec.querySelector('.grid');
+  if (!grid) return;
+  const items = [
+    ['01','天成系統為何在市場上被評價為「好用」'],
+    ['02','前端體驗優勢來自哪些設計細節'],
+    ['03','後台在營運、代理、會員、報表上有哪些值得借鑑之處'],
+    ['04','貴司現有系統與天成相比，主要落差在哪裡'],
+    ['05','哪些功能或體驗優化具有最高優先級'],
+    ['06','Product Team 後續應如何安排優化方向'],
+  ];
+  grid.innerHTML = items.map(([n, q]) => `
+    <div class="glass rounded-xl p-5 reveal transition-all duration-300" style="cursor:default;">
+      <div class="count-badge mb-4">${n}</div>
+      <p class="text-sm leading-relaxed" style="color:#7d9cad;">${q}</p>
+    </div>
+  `).join('');
+})();
+</script>
+
+<!-- ANALYSIS SCOPE -->
+<section id="scope" class="py-20 px-6 md:px-8 relative z-10">
+  <div class="max-w-6xl mx-auto">
+    <div class="sec-label mb-3 reveal">ANALYSIS DIMENSIONS</div>
+    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-12 reveal">分析面向</h2>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+
+      <!-- Dimension 1 -->
+      <div class="glass rounded-2xl overflow-hidden reveal d1 transition-all duration-300">
+        <!-- Header image area -->
+        <div class="p-8 relative" style="background:linear-gradient(135deg,rgba(0,229,200,0.08),rgba(0,229,200,0.02));border-bottom:1px solid rgba(0,229,200,0.1);">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(0,229,200,0.15);border:1px solid rgba(0,229,200,0.25);">
+              <span class="material-symbols-outlined" style="color:#00e5c8;font-variation-settings:'FILL' 1;font-size:24px;">devices</span>
+            </div>
+            <div>
+              <div class="font-mono text-[9px] tracking-widest uppercase mb-1" style="color:rgba(0,229,200,0.5);">DIMENSION 01</div>
+              <h3 class="font-headline font-bold text-xl text-white">前端體驗與轉換邏輯</h3>
+            </div>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:#7d9cad;">針對玩家端前台進行完整使用者旅程拆解，包含首頁、註冊、登入、存提、遊戲入口、活動入口等主要操作流程。</p>
+        </div>
+        <div class="p-8">
+          <div class="space-y-3">
+            <div id="d1-items"></div>
+          </div>
+          <div class="mt-6 pt-6 border-t" style="border-color:rgba(0,229,200,0.08);">
+            <p class="text-sm" style="color:#7d9cad;"><span style="color:#00e5c8;">分析目的：</span>找出天成系統在不同市場被評價為「好用」的核心原因，歸納可供前端產品優化的具體方向。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dimension 2 -->
+      <div class="glass rounded-2xl overflow-hidden reveal d2 transition-all duration-300">
+        <div class="p-8 relative" style="background:linear-gradient(135deg,rgba(124,92,252,0.08),rgba(124,92,252,0.02));border-bottom:1px solid rgba(124,92,252,0.12);">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.25);">
+              <span class="material-symbols-outlined" style="color:#a78bfa;font-variation-settings:'FILL' 1;font-size:24px;">admin_panel_settings</span>
+            </div>
+            <div>
+              <div class="font-mono text-[9px] tracking-widest uppercase mb-1" style="color:rgba(124,92,252,0.5);">DIMENSION 02</div>
+              <h3 class="font-headline font-bold text-xl text-white">後台營運與管理機制</h3>
+            </div>
+          </div>
+          <p class="text-sm leading-relaxed" style="color:#7d9cad;">針對管理端與代理端後台進行營運流程拆解，評估後台工具是否能有效支援日常營運、代理管理、會員管理與風控作業。</p>
+        </div>
+        <div class="p-8">
+          <div class="space-y-3">
+            <div id="d2-items"></div>
+          </div>
+          <div class="mt-6 pt-6 border-t" style="border-color:rgba(124,92,252,0.1);">
+            <p class="text-sm" style="color:#7d9cad;"><span style="color:#a78bfa;">分析目的：</span>盤點天成後台在營運效率、管理便利性與數據呈現上的優勢，協助貴司找出後台可優化的重點區域。</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const d1 = [
+    '玩家操作動線與頁面層級',
+    '首頁資訊架構與導流邏輯',
+    '註冊、登入、存款、提款流程順暢度',
+    '遊戲分類、搜尋、推薦與入口設計',
+    '活動頁面與促銷資訊呈現方式',
+    '手機版操作體驗與視覺易讀性',
+    '影響轉換率的關鍵介面設計',
+  ];
+  const d2 = [
+    '會員管理與會員查詢流程',
+    '代理層級、分潤與權限管理機制',
+    '存提款、優惠、活動與人工審核流程',
+    '數據報表呈現邏輯與查詢效率',
+    '日常營運操作的易用性',
+    '自動化、批次處理與提醒機制',
+    '後台權限、角色與操作風險控管',
+  ];
+  const render = (id, items, color) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = items.map(item => `
+      <div class="flex items-start gap-3 py-2 border-b border-white/4">
+        <span style="color:${color};margin-top:2px;flex-shrink:0;font-size:12px;">▸</span>
+        <span class="text-sm" style="color:#7d9cad;">${item}</span>
+      </div>
+    `).join('');
+  };
+  render('d1-items', d1, '#00e5c8');
+  render('d2-items', d2, '#a78bfa');
+})();
+</script>
+
+<!-- RESOURCES -->
+<section class="py-20 px-6 md:px-8 relative z-10" style="background:linear-gradient(180deg,transparent,rgba(124,92,252,0.02),transparent);">
+  <div class="max-w-6xl mx-auto">
+    <div class="sec-label mb-3 reveal">REQUIRED RESOURCES</div>
+    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-4 reveal">專案所需資源</h2>
+    <p class="text-text-muted mb-12 max-w-2xl reveal">為確保分析深度與準確度，專案啟動前需請貴司協助提供以下資料與測試權限。</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <!-- Required -->
+      <div class="glass rounded-2xl p-8 reveal d1">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(0,229,200,0.15);border:1px solid rgba(0,229,200,0.25);">
+            <span class="material-symbols-outlined" style="color:#00e5c8;font-size:16px;font-variation-settings:'FILL' 1;">priority_high</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-semibold text-white">必要項目</h3>
+            <div class="tag mt-1">天成 / 貴司 系統測試權限</div>
+          </div>
+        </div>
+        <div class="space-y-4" id="req-items"></div>
+      </div>
+
+      <!-- Optional -->
+      <div class="glass rounded-2xl p-8 reveal d2">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.25);">
+            <span class="material-symbols-outlined" style="color:#a78bfa;font-size:16px;font-variation-settings:'FILL' 1;">add_circle</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-semibold text-white">加分項目</h3>
+            <p class="text-xs mt-1" style="color:#7d9cad;">提供後可延伸分析深度</p>
+          </div>
+        </div>
+        <div class="space-y-4" id="opt-items"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const req = [
+    ['key','玩家端 Demo 帳號與網址'],
+    ['manage_accounts','管理端 Demo 帳號與網址'],
+    ['supervisor_account','代理端 Demo 帳號與網址'],
+    ['science','可操作之測試環境與基本測試額度'],
+  ];
+  const opt = [
+    ['language','誇獎天成系統的站長真實營運網址（可分析真實設定狀況）'],
+    ['forum','業務或商務團隊收集到的客戶反饋（可深度關注回饋重點）'],
+  ];
+  const renderReq = (id, items, color) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = items.map(([icon, label]) => `
+      <div class="flex items-start gap-3">
+        <span class="material-symbols-outlined flex-shrink-0 mt-0.5" style="color:${color};font-size:18px;font-variation-settings:'FILL' 1;">${icon}</span>
+        <span class="text-sm leading-relaxed" style="color:#7d9cad;">${label}</span>
+      </div>
+    `).join('');
+  };
+  renderReq('req-items', req, '#00e5c8');
+  renderReq('opt-items', opt, '#a78bfa');
+})();
+</script>
+
+<!-- DELIVERABLES -->
+<section id="deliverables" class="py-20 px-6 md:px-8 relative z-10">
+  <div class="max-w-6xl mx-auto">
+    <div class="sec-label mb-3 reveal">EXPECTED DELIVERABLES</div>
+    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-4 reveal">預期產出成果</h2>
+    <p class="text-text-muted mb-12 max-w-2xl reveal">最終交付一份完整正式的《Super Swan 與 天成 包網系統拆解與產品優化分析報告》</p>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="deliverable-cards"></div>
+
+    <!-- Value strip -->
+    <div class="glass rounded-2xl p-8 reveal">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="bar"></div>
+        <h3 class="font-headline font-semibold text-white">產出目標價值</h3>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8" id="value-items"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  const cards = [
+    ['description','完整分析報告', '系統性拆解天成系統，交叉對標 Super Swan','#00e5c8'],
+    ['present_to_all','簡報呈報', '正式報告＋主管層級呈報說明','#00e5c8'],
+    ['manage_search','深入延伸分析', '呈報後一次性深入延伸分析服務','#7c5cfc'],
+  ];
+  const el = document.getElementById('deliverable-cards');
+  if (el) el.innerHTML = cards.map(([icon, title, desc, color]) => `
+    <div class="glass rounded-xl p-6 reveal transition-all duration-300">
+      <span class="material-symbols-outlined mb-4 block" style="color:${color};font-size:32px;font-variation-settings:'FILL' 1;">${icon}</span>
+      <h4 class="font-headline font-bold text-base text-white mb-2">${title}</h4>
+      <p class="text-sm leading-relaxed" style="color:#7d9cad;">${desc}</p>
+    </div>
+  `).join('');
+
+  const values = [
+    '協助決策層快速掌握市場與產品差距',
+    '讓產品團隊具備明確的優化依據',
+    '降低內部反覆討論與試錯成本',
+    '將零散競品觀察轉化為系統化產品策略',
+    '加速後續產品優化與開發排程討論',
+  ];
+  const vel = document.getElementById('value-items');
+  if (vel) vel.innerHTML = values.map(v => `
+    <div class="flex items-start gap-2">
+      <span style="color:#00e5c8;flex-shrink:0;margin-top:2px;">✓</span>
+      <span class="text-sm" style="color:#7d9cad;">${v}</span>
+    </div>
+  `).join('');
+})();
+</script>
+
+<!-- PRICING -->
+<section id="pricing" class="py-20 px-6 md:px-8 relative z-10">
+  <div class="max-w-3xl mx-auto">
+    <div class="sec-label mb-3 text-center reveal">INVESTMENT & TIMELINE</div>
+    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-12 text-center reveal">報價與時程</h2>
+
+    <div class="price-card reveal">
+
+      <!-- Price -->
+      <div class="text-center mb-10">
+        <div class="font-mono text-[11px] tracking-widest uppercase mb-4" style="color:rgba(0,229,200,0.5);">PROJECT FEE</div>
+        <div class="font-headline font-black leading-none mb-2">
+          <span class="text-6xl md:text-7xl text-transparent bg-clip-text" style="background:linear-gradient(135deg,#00e5c8,#7c5cfc);">2,600</span>
+          <span class="text-2xl text-white ml-2">USDT</span>
+        </div>
+        <div class="laser w-40 mx-auto mt-6"></div>
+      </div>
+
+      <!-- Includes -->
+      <div class="grid md:grid-cols-3 gap-4 mb-10">
+        <div class="text-center p-4 rounded-xl" style="background:rgba(0,229,200,0.05);border:1px solid rgba(0,229,200,0.1);">
+          <span class="material-symbols-outlined mb-2 block" style="color:#00e5c8;font-variation-settings:'FILL' 1;">description</span>
+          <div class="text-sm font-semibold text-white mb-1">完整分析報告</div>
+          <div class="text-xs" style="color:#7d9cad;">系統性拆解與對標</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background:rgba(124,92,252,0.05);border:1px solid rgba(124,92,252,0.12);">
+          <span class="material-symbols-outlined mb-2 block" style="color:#a78bfa;font-variation-settings:'FILL' 1;">present_to_all</span>
+          <div class="text-sm font-semibold text-white mb-1">呈報說明服務</div>
+          <div class="text-xs" style="color:#7d9cad;">簡報 + 主管層級說明</div>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background:rgba(0,229,200,0.05);border:1px solid rgba(0,229,200,0.1);">
+          <span class="material-symbols-outlined mb-2 block" style="color:#00e5c8;font-variation-settings:'FILL' 1;">manage_search</span>
+          <div class="text-sm font-semibold text-white mb-1">延伸深入分析</div>
+          <div class="text-xs" style="color:#7d9cad;">呈報後一次性加深</div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="flex items-center gap-4 p-5 rounded-xl mb-8" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+        <span class="material-symbols-outlined flex-shrink-0" style="color:#00e5c8;font-variation-settings:'FILL' 1;">schedule</span>
+        <div>
+          <div class="text-sm font-semibold text-white">執行時程：10 – 14 工作天</div>
+          <div class="text-xs mt-0.5" style="color:#7d9cad;">自雙方確認合作且所有測試帳號與需求資源提供完畢後正式啟動</div>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="text-center">
+        <div class="font-mono text-[10px] tracking-wider uppercase mb-6" style="color:rgba(0,229,200,0.4);">Ready to start?</div>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest" style="color:#3d5a6a;">
+            <div class="w-2 h-2 rounded-full pdot" style="background:#00e5c8;box-shadow:0 0 6px #00e5c8;"></div>
+            顧問當前接案中
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:#000;border-top:1px solid rgba(0,229,200,0.06);">
+  <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="font-mono text-[9px] uppercase tracking-[.3em]" style="color:#3d5a6a;">© 2026 · Super Swan × 天成 競品分析提案</div>
+    <div class="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest" style="color:#3d5a6a;">
+      <span class="w-1.5 h-1.5 rounded-full pdot" style="background:#00e5c8;"></span>
+      CONFIDENTIAL PROPOSAL
+    </div>
+  </div>
+</footer>
+
+<!-- JS -->
+<script>
+// Canvas particle network
+(function(){
+  const cv = document.getElementById('cv');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  let W, H, nodes = [];
+  const N = 55, D = 120;
+  function resize() {
+    W = cv.offsetWidth; H = cv.offsetHeight;
+    cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+  }
+  function init() {
+    nodes = Array.from({length:N}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      vx: (Math.random()-.5)*.3, vy: (Math.random()-.5)*.3,
+      r: Math.random()*1.2+.4,
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (let i=0; i<nodes.length; i++) {
+      for (let j=i+1; j<nodes.length; j++) {
+        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if (d < D) {
+          ctx.strokeStyle = `rgba(0,229,200,${(1-d/D)*.3})`;
+          ctx.lineWidth = .35;
+          ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
+        }
+      }
+    }
+    nodes.forEach(n => {
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,229,200,0.65)';
+      ctx.shadowBlur = 8; ctx.shadowColor = '#00e5c8';
+      ctx.fill(); ctx.shadowBlur = 0;
+      n.x += n.vx; n.y += n.vy;
+      if (n.x<0||n.x>W) n.vx*=-1;
+      if (n.y<0||n.y>H) n.vy*=-1;
+    });
+    requestAnimationFrame(draw);
+  }
+  resize(); init(); draw();
+  window.addEventListener('resize', () => { resize(); });
+})();
+
+// Scroll reveal
+(function(){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+  }, { threshold: .1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+</script>
+
+</body>
+</html>
