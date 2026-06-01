@@ -145,8 +145,6 @@ nav { background: rgba(8,8,8,0.88); backdrop-filter: blur(24px); border-bottom: 
 <!-- Background radial glow -->
 <div class="fixed inset-0 pointer-events-none" style="z-index:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,160,24,0.04),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(201,160,24,0.025),transparent 50%);"></div>
 
-<!-- Flow canvas -->
-<canvas id="flowcv" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index:0;opacity:0.55;"></canvas>
 
 <!-- NAV -->
 <nav class="fixed top-0 z-50 w-full">
@@ -576,130 +574,6 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: .08 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-// ── Flowing gold light canvas ───────────────────────────
-(function(){
-  const cv = document.getElementById('flowcv');
-  if (!cv) return;
-  const ctx = cv.getContext('2d');
-  let W, H, t = 0;
-
-  // Ribbon curves
-  const ribbons = Array.from({length: 5}, (_, i) => ({
-    phase: i * Math.PI * 0.42,
-    speed: 0.0006 + i * 0.0002,
-    amp: 0.12 + i * 0.06,
-    yBase: 0.3 + i * 0.12,
-    width: 120 + i * 60,
-    alpha: 0.04 + i * 0.01,
-    color: i % 2 === 0 ? [201, 160, 24] : [240, 200, 80],
-  }));
-
-  // Particles
-  const particles = Array.from({length: 80}, () => ({
-    x: Math.random(), y: Math.random(),
-    vx: (Math.random() - 0.5) * 0.00015,
-    vy: -0.00008 - Math.random() * 0.0001,
-    r: Math.random() * 2 + 0.5,
-    alpha: Math.random() * 0.6 + 0.2,
-    life: Math.random(),
-    maxLife: 0.6 + Math.random() * 0.4,
-    twinkle: Math.random() * Math.PI * 2,
-  }));
-
-  function resize() {
-    W = cv.offsetWidth; H = cv.offsetHeight;
-    cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-  }
-
-  function drawRibbon(r) {
-    const pts = [];
-    const steps = 80;
-    for (let i = 0; i <= steps; i++) {
-      const px = (i / steps) * W;
-      const wave1 = Math.sin(i / steps * Math.PI * 2.5 + t * r.speed * 1000 + r.phase);
-      const wave2 = Math.sin(i / steps * Math.PI * 1.2 + t * r.speed * 700 + r.phase * 1.3);
-      const py = r.yBase * H + wave1 * r.amp * H * 0.6 + wave2 * r.amp * H * 0.4;
-      pts.push([px, py]);
-    }
-
-    // Draw glowing ribbon
-    for (let w = r.width; w > 0; w -= 8) {
-      const frac = w / r.width;
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i < pts.length; i++) {
-        const mx = (pts[i-1][0] + pts[i][0]) / 2;
-        const my = (pts[i-1][1] + pts[i][1]) / 2;
-        ctx.quadraticCurveTo(pts[i-1][0], pts[i-1][1], mx, my);
-      }
-      const [cr, cg, cb] = r.color;
-      ctx.strokeStyle = `rgba(${cr},${cg},${cb},${r.alpha * frac * frac})`;
-      ctx.lineWidth = w * 0.06;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-    }
-
-    // Bright core line
-    ctx.beginPath();
-    ctx.moveTo(pts[0][0], pts[0][1]);
-    for (let i = 1; i < pts.length; i++) {
-      const mx = (pts[i-1][0] + pts[i][0]) / 2;
-      const my = (pts[i-1][1] + pts[i][1]) / 2;
-      ctx.quadraticCurveTo(pts[i-1][0], pts[i-1][1], mx, my);
-    }
-    const [cr, cg, cb] = r.color;
-    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${r.alpha * 4})`;
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-  }
-
-  function drawParticles() {
-    particles.forEach(p => {
-      p.life += 0.003;
-      p.twinkle += 0.04;
-      if (p.life > p.maxLife) {
-        p.x = Math.random(); p.y = 0.8 + Math.random() * 0.3;
-        p.life = 0; p.maxLife = 0.6 + Math.random() * 0.4;
-        p.alpha = Math.random() * 0.6 + 0.2;
-        p.r = Math.random() * 2 + 0.5;
-      }
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
-
-      const lifeAlpha = Math.sin(p.life / p.maxLife * Math.PI);
-      const twinkleAlpha = 0.5 + 0.5 * Math.sin(p.twinkle);
-      const a = p.alpha * lifeAlpha * twinkleAlpha;
-
-      const px = p.x * W, py = p.y * H;
-
-      // Glow
-      const grad = ctx.createRadialGradient(px, py, 0, px, py, p.r * 4);
-      grad.addColorStop(0, `rgba(240,200,80,${a * 0.6})`);
-      grad.addColorStop(1, `rgba(201,160,24,0)`);
-      ctx.beginPath(); ctx.arc(px, py, p.r * 4, 0, Math.PI*2);
-      ctx.fillStyle = grad; ctx.fill();
-
-      // Core dot
-      ctx.beginPath(); ctx.arc(px, py, p.r * twinkleAlpha, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(255,230,100,${a})`;
-      ctx.fill();
-    });
-  }
-
-  let last = 0;
-  function draw(ts) {
-    t = ts;
-    ctx.clearRect(0, 0, W, H);
-    ribbons.forEach(r => drawRibbon(r));
-    drawParticles();
-    requestAnimationFrame(draw);
-  }
-
-  resize();
-  requestAnimationFrame(draw);
-  window.addEventListener('resize', resize);
-})();
 </script>
 
 </body>
