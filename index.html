@@ -6,7 +6,7 @@
 <title>Super Swan × 天成 | 系統拆解與產品優化分析提案</title>
 <meta name="description" content="針對天成包網系統進行系統性拆解，與 Super Swan 現有產品進行交叉對標分析">
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>
 tailwind.config = {
@@ -14,13 +14,13 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        teal: { DEFAULT: '#00e5c8', dim: '#00c9ae', dark: '#007a69' },
-        navy: { DEFAULT: '#060d12', mid: '#0c1a22', card: '#0f2029', border: '#1a3040' },
-        purple: { DEFAULT: '#7c5cfc', dim: '#5a3fd4' },
-        text: { base: '#e8eef2', muted: '#7d9cad', faint: '#3d5a6a' },
+        gold: { light: '#f0d060', DEFAULT: '#c9a018', dim: '#9a7a10', dark: '#4a3800' },
+        ink: { DEFAULT: '#080808', 1: '#0f0f0f', 2: '#161616', 3: '#1e1e1e', 4: '#2a2a2a' },
+        stone: { DEFAULT: '#f5f0e8', muted: '#9a8e7a', faint: '#3a3530' },
       },
       fontFamily: {
-        headline: ['Space Grotesk', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+        sans: ['Space Grotesk', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
         body: ['Noto Sans TC', 'sans-serif'],
       }
@@ -31,204 +31,201 @@ tailwind.config = {
 <style>
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { background: #060d12; color: #e8eef2; font-family: 'Noto Sans TC', sans-serif; overflow-x: hidden; }
+body { background: #080808; color: #f5f0e8; font-family: 'Noto Sans TC', sans-serif; overflow-x: hidden; }
 
-/* Noise */
+/* Subtle noise texture */
 body::before {
-  content: '';
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
-/* Glass card */
-.glass {
-  background: rgba(15, 32, 41, 0.7);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 229, 200, 0.08);
-}
-.glass:hover {
-  border-color: rgba(0, 229, 200, 0.2);
-  box-shadow: 0 0 40px rgba(0, 229, 200, 0.04);
-}
+/* Gold glow */
+.gold-glow { text-shadow: 0 0 40px rgba(201,160,24,0.4); }
+.gold-glow-sm { text-shadow: 0 0 20px rgba(201,160,24,0.35); }
 
-/* Teal glow */
-.teal-glow { text-shadow: 0 0 30px rgba(0,229,200,0.5); }
-.teal-glow-sm { text-shadow: 0 0 16px rgba(0,229,200,0.4); }
+/* Hairline */
+.hairline { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,160,24,0.6), transparent); }
+.hairline-v { width: 1px; background: linear-gradient(180deg, transparent, rgba(201,160,24,0.4), transparent); }
 
-/* Scan line */
-.scanline::after {
-  content: '';
-  position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(180deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-  z-index: 1;
+/* Gold border card */
+.luxury-card {
+  background: #0f0f0f;
+  border: 1px solid rgba(201,160,24,0.14);
+  transition: border-color .35s, box-shadow .35s;
+}
+.luxury-card:hover {
+  border-color: rgba(201,160,24,0.32);
+  box-shadow: 0 0 48px rgba(201,160,24,0.05), inset 0 0 40px rgba(201,160,24,0.02);
 }
 
-/* Glowing line */
-@keyframes glow-sweep { 0%,100%{opacity:.3;} 50%{opacity:1;} }
-.glow-line {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #00e5c8, transparent);
-  animation: glow-sweep 3s ease-in-out infinite;
+/* Corner ornament */
+.corner {
+  position: absolute;
+  width: 16px; height: 16px;
+  border-color: rgba(201,160,24,0.5);
+  border-style: solid;
 }
-
-/* Floating */
-@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
-.float { animation: float 6s ease-in-out infinite; }
-
-/* Pulse dot */
-@keyframes pdot { 0%,100%{opacity:1;} 50%{opacity:.25;} }
-.pdot { animation: pdot 2s ease-in-out infinite; }
+.corner-tl { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.corner-tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
+.corner-bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+.corner-br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 
 /* Reveal */
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
 .reveal.on { opacity: 1; transform: none; }
-.d1 { transition-delay: .08s; } .d2 { transition-delay: .16s; } .d3 { transition-delay: .24s; }
+.d1 { transition-delay: .1s; } .d2 { transition-delay: .2s; } .d3 { transition-delay: .3s; }
 
-/* Counter */
-.count-badge {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(0,229,200,0.12); border: 1px solid rgba(0,229,200,0.3);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #00e5c8;
-  flex-shrink: 0;
-}
+/* Pulse */
+@keyframes pdot { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+.pdot { animation: pdot 2.5s ease-in-out infinite; }
 
-/* Tag */
-.tag {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 10px; border-radius: 4px; font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-  background: rgba(0,229,200,0.08); border: 1px solid rgba(0,229,200,0.18); color: #00e5c8;
-}
-.tag-purple {
-  background: rgba(124,92,252,0.1); border-color: rgba(124,92,252,0.25); color: #a78bfa;
-}
+/* Float */
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
+.float { animation: float 7s ease-in-out infinite; }
 
-/* Section label */
-.sec-label {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  letter-spacing: .4em; text-transform: uppercase; color: rgba(0,229,200,0.5);
-}
-
-/* Divider bar */
-.bar { width: 3px; height: 20px; border-radius: 2px; background: linear-gradient(180deg,#00e5c8,#7c5cfc); flex-shrink:0; }
-
-/* Price card */
-.price-card {
-  background: linear-gradient(135deg, rgba(0,229,200,0.06), rgba(124,92,252,0.06));
-  border: 1px solid rgba(0,229,200,0.15);
-  border-radius: 16px; padding: 40px;
-}
-
-/* Spinner ring */
+/* Spin */
 @keyframes spin { from{transform:rotate(0);} to{transform:rotate(360deg);} }
 
-/* Nav */
-nav { background: rgba(6,13,18,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,229,200,0.06); }
-
-/* Laser line */
-@keyframes laser { 0%{left:110%;} 100%{left:-20%;} }
-.laser {
-  position: relative; overflow: hidden;
-  background: linear-gradient(90deg, transparent, rgba(0,229,200,0.4), transparent);
-  height: 1px;
-}
-.laser::after {
-  content: ''; position: absolute; top: -2px; width: 25%; height: 5px;
-  background: linear-gradient(90deg, transparent, #00e5c8, #fff, #00e5c8, transparent);
-  box-shadow: 0 0 18px 4px rgba(0,229,200,1), 0 0 32px 8px rgba(0,229,200,0.5);
-  animation: laser 1.6s linear infinite;
+/* Scan line */
+.scan::after {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background: repeating-linear-gradient(180deg,transparent,transparent 3px,rgba(0,0,0,0.025) 3px,rgba(0,0,0,0.025) 6px);
 }
 
-/* Hexagon bg */
-.hex-bg {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 2l26 15v18L30 50 4 35V17z' fill='none' stroke='rgba(0,229,200,0.04)' stroke-width='1'/%3E%3C/svg%3E");
-  background-size: 60px 52px;
+/* Roman numeral label */
+.roman { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 13px; letter-spacing: .12em; color: rgba(201,160,24,0.5); }
+
+/* Gold tag */
+.gtag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 2px; font-size: 9px;
+  letter-spacing: .16em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace;
+  background: rgba(201,160,24,0.07); border: 1px solid rgba(201,160,24,0.22); color: #c9a018;
 }
+
+/* Divider ornament */
+.ornament { display: flex; align-items: center; gap: 12px; }
+.ornament::before, .ornament::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(201,160,24,0.25)); }
+.ornament::after { background:linear-gradient(270deg,transparent,rgba(201,160,24,0.25)); }
+
+/* Number badge */
+.nbadge {
+  font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300;
+  color: rgba(201,160,24,0.25); line-height: 1;
+  border-bottom: 1px solid rgba(201,160,24,0.2); padding-bottom: 4px;
+  margin-bottom: 10px; display: block;
+}
+
+/* Section title */
+.sec-en { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .5em; text-transform: uppercase; color: rgba(201,160,24,0.4); }
+
+/* Price */
+.price-num {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: clamp(64px, 12vw, 108px);
+  color: #c9a018; line-height: 1;
+  text-shadow: 0 0 60px rgba(201,160,24,0.25);
+}
+
+nav { background: rgba(8,8,8,0.88); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(201,160,24,0.08); }
+
+/* Check mark */
+.chk::before { content:'✦'; color: #c9a018; margin-right: 8px; font-size: 10px; }
+
+/* Profile ring */
+.profile-ring {
+  background: conic-gradient(from 180deg, #c9a018, #f0d060, #9a7a10, #c9a018);
+  padding: 2px; border-radius: 9999px;
+}
+.profile-inner { background: #0f0f0f; border-radius: 9999px; overflow: hidden; }
 </style>
 </head>
 <body class="dark">
 
-<!-- Canvas -->
-<canvas id="cv" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index:0;opacity:.5;"></canvas>
+<!-- Background radial glow -->
+<div class="fixed inset-0 pointer-events-none" style="z-index:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,160,24,0.04),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(201,160,24,0.025),transparent 50%);"></div>
+
+<!-- Flow canvas -->
+<canvas id="flowcv" class="fixed inset-0 w-full h-full pointer-events-none" style="z-index:0;opacity:0.55;"></canvas>
 
 <!-- NAV -->
 <nav class="fixed top-0 z-50 w-full">
-  <div class="max-w-6xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
+  <div class="max-w-6xl mx-auto px-6 md:px-10 py-4 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <div class="w-2 h-2 rounded-full bg-teal pdot" style="box-shadow:0 0 8px #00e5c8;"></div>
-      <span class="font-mono text-[11px] tracking-widest text-teal uppercase">Super Swan × 天成</span>
+      <span class="text-gold font-serif italic text-lg leading-none gold-glow-sm">◈</span>
+      <span class="font-mono text-[10px] tracking-[.3em] uppercase" style="color:rgba(201,160,24,0.7);">Super Swan × 天成</span>
     </div>
-    <div class="hidden md:flex items-center gap-6">
-      <a href="#about" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">顧問背景</a>
-      <a href="#scope" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">分析面向</a>
-      <a href="#deliverables" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">預期產出</a>
-      <a href="#pricing" class="font-mono text-[10px] tracking-widest uppercase text-text-muted hover:text-teal transition-colors">報價</a>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#about" class="font-mono text-[9px] tracking-widest uppercase" style="color:rgba(245,240,232,0.4);">顧問背景</a>
+      <a href="#scope" class="font-mono text-[9px] tracking-widest uppercase" style="color:rgba(245,240,232,0.4);">分析面向</a>
+      <a href="#deliverables" class="font-mono text-[9px] tracking-widest uppercase" style="color:rgba(245,240,232,0.4);">預期產出</a>
+      <a href="#pricing" class="font-mono text-[9px] tracking-widest uppercase" style="color:rgba(245,240,232,0.4);">報價</a>
     </div>
-    <div class="tag">提案文件</div>
+    <div class="gtag">提案文件</div>
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="relative min-h-screen flex items-center pt-20 hex-bg scanline overflow-hidden">
-  <div class="absolute inset-0" style="background:radial-gradient(ellipse 70% 60% at 80% 30%,rgba(0,229,200,0.05),transparent 65%),radial-gradient(ellipse 50% 50% at 15% 70%,rgba(124,92,252,0.06),transparent 60%);"></div>
+<!-- ════════════════════ HERO ════════════════════ -->
+<section class="relative min-h-screen flex items-center pt-20 scan overflow-hidden">
 
-  <div class="max-w-6xl mx-auto px-6 md:px-8 w-full relative z-10 py-20">
+  <!-- Grid overlay -->
+  <div class="absolute inset-0 pointer-events-none" style="background-image:linear-gradient(rgba(201,160,24,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(201,160,24,0.025) 1px,transparent 1px);background-size:80px 80px;"></div>
+
+  <div class="max-w-6xl mx-auto px-6 md:px-10 w-full relative z-10 py-24">
     <div class="flex flex-col lg:flex-row items-center gap-16">
 
-      <!-- Text -->
+      <!-- Left text -->
       <div class="lg:w-3/5">
-        <div class="sec-label mb-6 flex items-center gap-3">
-          <span class="w-2 h-2 rounded-full bg-teal pdot" style="box-shadow:0 0 8px #00e5c8;"></span>
+        <div class="sec-en mb-8 flex items-center gap-4">
+          <span class="w-2 h-2 pdot" style="background:#c9a018;border-radius:50%;display:inline-block;box-shadow:0 0 6px #c9a018;"></span>
           COMPETITIVE ANALYSIS PROPOSAL · 2026
         </div>
 
-        <h1 class="font-headline font-bold leading-[1.08] mb-6">
-          <span class="block text-3xl sm:text-4xl md:text-5xl text-transparent bg-clip-text" style="background:linear-gradient(135deg,#00e5c8,#7c5cfc);">Super Swan</span>
-          <span class="block text-2xl sm:text-3xl md:text-4xl text-white mt-1">×&nbsp;天成包網系統</span>
-          <span class="block text-lg sm:text-xl md:text-2xl text-text-muted font-normal mt-2">系統拆解與產品優化分析</span>
+        <h1 class="mb-8">
+          <span class="block font-serif italic font-light leading-[1] text-stone" style="font-size:clamp(40px,7vw,76px);">Super Swan</span>
+          <span class="block font-mono text-[11px] tracking-[.5em] uppercase my-4" style="color:rgba(201,160,24,0.5);">× 天成包網系統 ×</span>
+          <span class="block font-serif font-light leading-[1.1] text-stone" style="font-size:clamp(22px,4vw,42px);">系統拆解與產品優化分析</span>
         </h1>
 
-        <p class="text-text-muted text-base leading-relaxed max-w-xl mb-10">
+        <div class="hairline mb-8" style="max-width:320px;"></div>
+
+        <p class="mb-10 leading-relaxed max-w-xl" style="color:#9a8e7a;font-size:15px;">
           針對「天成包網系統」進行系統性拆解，並與 Super Swan 現有產品進行交叉對標分析，協助決策層與 Product Team 快速掌握競品優勢、自家產品落差與後續優化方向。
         </p>
 
         <div class="flex flex-wrap gap-3 mb-10">
-          <div class="tag"><span class="material-symbols-outlined text-xs" style="font-size:13px;">analytics</span>前端體驗分析</div>
-          <div class="tag"><span class="material-symbols-outlined text-xs" style="font-size:13px;">manage_accounts</span>後台營運盤點</div>
-          <div class="tag tag-purple"><span class="material-symbols-outlined text-xs" style="font-size:13px;">timer</span>10–14 工作天</div>
-          <div class="tag tag-purple"><span class="material-symbols-outlined text-xs" style="font-size:13px;">paid</span>2,600 USDT</div>
+          <div class="gtag">前端體驗分析</div>
+          <div class="gtag">後台營運盤點</div>
+          <div class="gtag">10–14 工作天</div>
+          <div class="gtag">2,600 USDT</div>
         </div>
 
         <a href="#pricing"
-          class="inline-flex items-center gap-2 px-8 py-4 rounded font-headline font-bold text-sm transition-all hover:scale-105"
-          style="background:linear-gradient(135deg,#00e5c8,#00c9ae);color:#060d12;box-shadow:0 0 32px rgba(0,229,200,0.3);">
-          查看完整報價 <span class="material-symbols-outlined text-base">arrow_forward</span>
+          class="inline-flex items-center gap-3 px-8 py-4 font-sans font-semibold text-sm tracking-wider transition-all"
+          style="background:linear-gradient(135deg,#c9a018,#9a7a10);color:#080808;letter-spacing:.08em;box-shadow:0 0 40px rgba(201,160,24,0.2);">
+          查看完整報價
+          <span class="material-symbols-outlined text-base" style="font-size:16px;">arrow_forward</span>
         </a>
       </div>
 
-      <!-- Right visual -->
-      <div class="lg:w-2/5 flex items-center justify-center">
-        <div class="relative w-72 h-72 float">
-          <!-- Rings -->
-          <div class="absolute inset-0 rounded-full border" style="border-color:rgba(0,229,200,0.12);animation:spin 18s linear infinite;"></div>
-          <div class="absolute inset-6 rounded-full border border-dashed" style="border-color:rgba(124,92,252,0.2);animation:spin 12s linear infinite reverse;"></div>
-          <div class="absolute inset-12 rounded-full border" style="border-color:rgba(0,229,200,0.08);"></div>
-          <!-- Glow -->
-          <div class="absolute inset-20 rounded-full" style="background:radial-gradient(circle,rgba(0,229,200,0.15),rgba(124,92,252,0.08),transparent);filter:blur(8px);"></div>
-          <!-- Center -->
+      <!-- Right ornament -->
+      <div class="lg:w-2/5 flex justify-center">
+        <div class="relative w-64 h-64 float">
+          <!-- Outer ring -->
+          <div class="absolute inset-0 rounded-full" style="border:1px solid rgba(201,160,24,0.15);animation:spin 20s linear infinite;"></div>
+          <div class="absolute inset-4 rounded-full border-dashed" style="border:1px dashed rgba(201,160,24,0.1);animation:spin 15s linear infinite reverse;"></div>
+          <!-- Glow core -->
+          <div class="absolute inset-12 rounded-full" style="background:radial-gradient(circle,rgba(201,160,24,0.12),transparent 70%);filter:blur(10px);"></div>
+          <!-- Center text -->
           <div class="absolute inset-0 flex items-center justify-center">
             <div class="text-center">
-              <div class="font-headline font-black text-6xl text-transparent" style="background:linear-gradient(135deg,rgba(0,229,200,0.5),rgba(124,92,252,0.3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">分析</div>
-              <div class="font-mono text-[9px] tracking-[.4em] uppercase mt-1" style="color:rgba(0,229,200,0.4);">Analysis</div>
+              <div class="font-serif italic font-light" style="font-size:72px;color:rgba(201,160,24,0.2);line-height:1;">分</div>
+              <div class="font-serif italic font-light" style="font-size:72px;color:rgba(201,160,24,0.15);line-height:1;margin-top:-16px;">析</div>
             </div>
           </div>
-          <!-- Orbiting dot -->
-          <div class="absolute inset-0" style="animation:spin 7s linear infinite;">
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full" style="background:#00e5c8;box-shadow:0 0 12px #00e5c8,0 0 24px rgba(0,229,200,0.5);"></div>
-          </div>
-          <div class="absolute inset-0" style="animation:spin 11s linear infinite reverse;">
-            <div class="absolute bottom-6 right-6 w-2 h-2 rounded-full" style="background:#7c5cfc;box-shadow:0 0 8px #7c5cfc;"></div>
+          <!-- Gold dot orbiting -->
+          <div class="absolute inset-0" style="animation:spin 8s linear infinite;">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full" style="background:#c9a018;box-shadow:0 0 10px #c9a018,0 0 20px rgba(201,160,24,0.4);"></div>
           </div>
         </div>
       </div>
@@ -236,541 +233,472 @@ nav { background: rgba(6,13,18,0.8); backdrop-filter: blur(20px); border-bottom:
     </div>
   </div>
 
-  <!-- Scroll hint -->
-  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
-    <span class="font-mono text-[9px] tracking-widest uppercase" style="color:#00e5c8;">Scroll</span>
-    <div class="w-px h-10" style="background:linear-gradient(180deg,#00e5c8,transparent);"></div>
-  </div>
+  <!-- Bottom fade -->
+  <div class="absolute bottom-0 left-0 right-0 h-24 pointer-events-none" style="background:linear-gradient(transparent,#080808);"></div>
 </section>
 
-<!-- DIVIDER -->
-<div class="laser w-full"></div>
-
-<!-- ABOUT CONSULTANT -->
-<section id="about" class="py-20 px-6 md:px-8 relative z-10">
+<!-- ════════════════════ ABOUT ════════════════════ -->
+<section id="about" class="py-24 px-6 md:px-10 relative z-10">
   <div class="max-w-6xl mx-auto">
-    <div class="sec-label mb-3 reveal">CONSULTANT PROFILE</div>
-    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-12 reveal">顧問經歷背景</h2>
 
-    <!-- Profile photo + intro -->
-    <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-12 glass rounded-2xl p-8 reveal">
-      <div class="flex-shrink-0">
-        <div class="relative w-32 h-32 md:w-40 md:h-40">
-          <div class="absolute inset-0 rounded-full" style="background:linear-gradient(135deg,#00e5c8,#7c5cfc);padding:2px;">
-            <div class="w-full h-full rounded-full overflow-hidden">
-              <img src="profile.jpg" alt="Mike Ma" class="w-full h-full object-cover rounded-full" style="filter:brightness(0.95) contrast(1.05);">
+    <div class="mb-16 reveal">
+      <div class="sec-en mb-3">Consultant Profile</div>
+      <h2 class="font-serif italic font-light text-stone" style="font-size:clamp(32px,5vw,52px);">顧問經歷背景</h2>
+    </div>
+
+    <!-- Profile card -->
+    <div class="luxury-card rounded-none p-8 md:p-12 mb-8 reveal relative">
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+
+      <div class="flex flex-col md:flex-row items-center md:items-start gap-10">
+        <!-- Photo -->
+        <div class="flex-shrink-0">
+          <div class="profile-ring w-36 h-36 md:w-44 md:h-44">
+            <div class="profile-inner w-full h-full">
+              <img src="profile.jpg" alt="Mike Ma" class="w-full h-full object-cover" style="filter:contrast(1.06) brightness(0.92);">
             </div>
           </div>
-          <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center" style="background:#00e5c8;box-shadow:0 0 12px #00e5c8;">
-            <span class="material-symbols-outlined" style="font-size:14px;color:#060d12;font-variation-settings:'FILL' 1;">verified</span>
-          </div>
         </div>
-      </div>
-      <div class="text-center md:text-left">
-        <div class="font-mono text-[10px] tracking-widest uppercase mb-1" style="color:rgba(0,229,200,0.5);">LEAD CONSULTANT</div>
-        <h3 class="font-headline font-bold text-2xl text-white mb-1">Mike Ma</h3>
-        <p class="text-sm mb-4" style="color:#7d9cad;">遊戲產業資深顧問 · 15 年以上跨領域實戰經驗</p>
-        <div class="flex flex-wrap gap-2 justify-center md:justify-start">
-          <div class="tag">IGS · 遊戲開發</div>
-          <div class="tag tag-purple">BBIN · 市場協理</div>
-          <div class="tag">AI 應用導入</div>
+        <!-- Info -->
+        <div class="text-center md:text-left flex-1">
+          <div class="roman mb-2">Lead Consultant</div>
+          <div class="font-serif italic text-stone mb-1" style="font-size:clamp(28px,4vw,42px);">Mike Ma</div>
+          <div class="hairline mb-5" style="max-width:200px;margin-left:0;"></div>
+          <p class="mb-6 leading-relaxed" style="color:#9a8e7a;font-size:14px;max-width:480px;">遊戲產業資深顧問，具備 15 年以上橫跨遊戲研發、平台包網、市場策略與 AI 應用導入的跨領域實戰經驗。</p>
+          <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+            <div class="gtag">IGS · 遊戲開發</div>
+            <div class="gtag">BBIN · 市場協理</div>
+            <div class="gtag">大數據分析</div>
+            <div class="gtag">AI 應用導入</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="grid md:grid-cols-2 gap-6 mb-12">
+    <!-- Career cards -->
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
 
-      <!-- IGS Card -->
-      <div class="glass rounded-2xl p-8 reveal d1 transition-all duration-300">
-        <div class="flex items-start gap-5 mb-6">
-          <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(0,229,200,0.1);border:1px solid rgba(0,229,200,0.2);">
-            <span class="material-symbols-outlined text-teal" style="font-size:28px;font-variation-settings:'FILL' 1;">videogame_asset</span>
-          </div>
-          <div>
-            <div class="font-mono text-[10px] tracking-widest uppercase mb-1" style="color:rgba(0,229,200,0.5);">2016 – 2020</div>
-            <h3 class="font-headline font-bold text-xl text-white">IGS 遊戲開發</h3>
-            <div class="tag mt-2">4 年經驗</div>
-          </div>
+      <div class="luxury-card rounded-none p-8 reveal d1 relative">
+        <div class="corner corner-tl"></div><div class="corner corner-br"></div>
+        <div class="roman mb-4">2016 – 2020</div>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="material-symbols-outlined" style="color:#c9a018;font-size:22px;font-variation-settings:'FILL' 1;">videogame_asset</span>
+          <h3 class="font-sans font-semibold text-lg text-stone">IGS 遊戲開發</h3>
+          <span class="ml-auto gtag">4 年</span>
         </div>
-        <p class="text-text-muted text-sm leading-relaxed">
-          具備遊戲產品開發、系統邏輯理解與產品設計經驗，深入理解遊戲平台底層架構與使用者行為模式。
-        </p>
+        <div class="hairline mb-4"></div>
+        <p style="color:#9a8e7a;font-size:14px;line-height:1.8;">具備遊戲產品開發、系統邏輯理解與產品設計經驗，深入理解遊戲平台底層架構與使用者行為模式。</p>
       </div>
 
-      <!-- BBIN Card -->
-      <div class="glass rounded-2xl p-8 reveal d2 transition-all duration-300">
-        <div class="flex items-start gap-5 mb-6">
-          <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.2);">
-            <span class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1;color:#a78bfa;">trending_up</span>
-          </div>
-          <div>
-            <div class="font-mono text-[10px] tracking-widest uppercase mb-1" style="color:rgba(124,92,252,0.5);">2020 – 2026</div>
-            <h3 class="font-headline font-bold text-xl text-white">BBIN 市場營銷部協理</h3>
-            <div class="tag tag-purple mt-2">11 年經驗</div>
-          </div>
+      <div class="luxury-card rounded-none p-8 reveal d2 relative">
+        <div class="corner corner-tl"></div><div class="corner corner-br"></div>
+        <div class="roman mb-4">2020 – 2026</div>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="material-symbols-outlined" style="color:#c9a018;font-size:22px;font-variation-settings:'FILL' 1;">trending_up</span>
+          <h3 class="font-sans font-semibold text-lg text-stone">BBIN 市場營銷部協理</h3>
+          <span class="ml-auto gtag">11 年</span>
         </div>
-        <p class="text-text-muted text-sm leading-relaxed">
-          負責市場與系統分析、活動與系統設計、大數據分析、AI 應用導入與產品營運策略規劃。
-        </p>
+        <div class="hairline mb-4"></div>
+        <p style="color:#9a8e7a;font-size:14px;line-height:1.8;">負責市場與系統分析、活動與系統設計、大數據分析、AI 應用導入與產品營運策略規劃。</p>
       </div>
     </div>
 
-    <!-- Core competencies -->
-    <div class="glass rounded-2xl p-8 reveal">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="bar"></div>
-        <h3 class="font-headline font-semibold text-lg text-white">核心專長</h3>
-      </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {[
-          ['analytics','遊戲平台與包網系統分析'],
-          ['route','前端使用者旅程與轉換邏輯拆解'],
-          ['admin_panel_settings','後台營運工具與管理流程盤點'],
-          ['compare_arrows','競品功能對標與產品落差分析'],
-          ['insights','數據導向產品優化建議'],
-          ['smart_toy','AI 輔助產品與營運流程優化'],
-        ].map(([icon, label]) => `
-          <div class="flex items-center gap-3 py-3">
-            <span class="material-symbols-outlined text-base flex-shrink-0" style="color:#00e5c8;font-variation-settings:'FILL' 1;">${icon}</span>
-            <span class="text-text-muted text-sm">${label}</span>
-          </div>
-        `).join('')}
-      </div>
+    <!-- Core skills -->
+    <div class="luxury-card rounded-none p-8 md:p-10 reveal">
+      <div class="roman mb-3">Core Competencies</div>
+      <h3 class="font-serif italic text-stone text-2xl mb-6">核心專長</h3>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-0" id="skills-grid"></div>
     </div>
 
   </div>
 </section>
 
-<script>
-// Render competencies template
-document.querySelectorAll('[class*="glass rounded-2xl p-8 reveal"]:last-child .grid').forEach(grid => {
-  const items = [
-    ['analytics','遊戲平台與包網系統分析'],
-    ['route','前端使用者旅程與轉換邏輯拆解'],
-    ['admin_panel_settings','後台營運工具與管理流程盤點'],
-    ['compare_arrows','競品功能對標與產品落差分析'],
-    ['insights','數據導向產品優化建議'],
-    ['smart_toy','AI 輔助產品與營運流程優化'],
-  ];
-  grid.innerHTML = items.map(([icon, label]) => `
-    <div class="flex items-center gap-3 py-3 border-b border-white/5">
-      <span class="material-symbols-outlined flex-shrink-0" style="color:#00e5c8;font-variation-settings:'FILL' 1;font-size:18px;">${icon}</span>
-      <span class="text-sm" style="color:#7d9cad;">${label}</span>
-    </div>
-  `).join('');
-});
-</script>
-
-<!-- PROJECT OBJECTIVE -->
-<section class="py-20 px-6 md:px-8 relative z-10" style="background:linear-gradient(180deg,transparent,rgba(0,229,200,0.02),transparent);">
+<!-- ════════════════════ OBJECTIVE ════════════════════ -->
+<section class="py-24 px-6 md:px-10 relative z-10" style="background:linear-gradient(180deg,transparent,rgba(201,160,24,0.015),transparent);">
   <div class="max-w-6xl mx-auto">
-    <div class="sec-label mb-3 reveal">PROJECT OBJECTIVE</div>
-    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-4 reveal">專案目標</h2>
-    <p class="text-text-muted mb-12 max-w-2xl reveal">
-      協助貴司從「產品體驗、營運後台、商業轉化、功能差異」四個角度，全面拆解天成包網系統的產品優勢。
-    </p>
 
-    <!-- 6 Questions Grid -->
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
-      {[
-        ['01','天成系統為何在市場上被評價為「好用」'],
-        ['02','前端體驗優勢來自哪些設計細節'],
-        ['03','後台在營運、代理、會員、報表上有哪些值得借鑑之處'],
-        ['04','貴司現有系統與天成相比，主要落差在哪裡'],
-        ['05','哪些功能或體驗優化具有最高優先級'],
-        ['06','Product Team 後續應如何安排優化方向'],
-      ].map(([n, q]) => `
-        <div class="glass rounded-xl p-5 reveal hover:border-teal/20 transition-all">
-          <div class="count-badge mb-4">${n}</div>
-          <p class="text-sm leading-relaxed" style="color:#7d9cad;">${q}</p>
-        </div>
-      `).join('')}
+    <div class="mb-16 reveal">
+      <div class="sec-en mb-3">Project Objective</div>
+      <h2 class="font-serif italic font-light text-stone mb-4" style="font-size:clamp(32px,5vw,52px);">專案目標</h2>
+      <p class="max-w-2xl" style="color:#9a8e7a;font-size:15px;line-height:1.8;">協助貴司從「產品體驗、營運後台、商業轉化、功能差異」四個角度，全面拆解天成包網系統的產品優勢，透過實機操作、功能盤點與交叉對標，產出可供管理層決策與產品團隊執行的分析報告。</p>
     </div>
 
-    <div class="glow-line reveal"></div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px" style="background:rgba(201,160,24,0.08);" id="obj-grid"></div>
+
   </div>
 </section>
 
-<script>
-document.querySelectorAll('section').forEach(sec => {
-  const grids = sec.querySelectorAll('.grid');
-  grids.forEach(grid => {
-    // Handle template strings that weren't rendered
-    if (grid.innerHTML.includes('{[')) {
-      grid.innerHTML = '';
-    }
-  });
-});
-
-// Render project questions
-(function(){
-  const sections = document.querySelectorAll('section');
-  let objSec = null;
-  sections.forEach(s => { if (s.querySelector('.sec-label')?.textContent.includes('PROJECT OBJECTIVE')) objSec = s; });
-  if (!objSec) return;
-  const grid = objSec.querySelector('.grid');
-  if (!grid) return;
-  const items = [
-    ['01','天成系統為何在市場上被評價為「好用」'],
-    ['02','前端體驗優勢來自哪些設計細節'],
-    ['03','後台在營運、代理、會員、報表上有哪些值得借鑑之處'],
-    ['04','貴司現有系統與天成相比，主要落差在哪裡'],
-    ['05','哪些功能或體驗優化具有最高優先級'],
-    ['06','Product Team 後續應如何安排優化方向'],
-  ];
-  grid.innerHTML = items.map(([n, q]) => `
-    <div class="glass rounded-xl p-5 reveal transition-all duration-300" style="cursor:default;">
-      <div class="count-badge mb-4">${n}</div>
-      <p class="text-sm leading-relaxed" style="color:#7d9cad;">${q}</p>
-    </div>
-  `).join('');
-})();
-</script>
-
-<!-- ANALYSIS SCOPE -->
-<section id="scope" class="py-20 px-6 md:px-8 relative z-10">
+<!-- ════════════════════ SCOPE ════════════════════ -->
+<section id="scope" class="py-24 px-6 md:px-10 relative z-10">
   <div class="max-w-6xl mx-auto">
-    <div class="sec-label mb-3 reveal">ANALYSIS DIMENSIONS</div>
-    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-12 reveal">分析面向</h2>
+
+    <div class="mb-16 reveal">
+      <div class="sec-en mb-3">Analysis Dimensions</div>
+      <h2 class="font-serif italic font-light text-stone" style="font-size:clamp(32px,5vw,52px);">分析面向</h2>
+    </div>
 
     <div class="grid lg:grid-cols-2 gap-8">
 
       <!-- Dimension 1 -->
-      <div class="glass rounded-2xl overflow-hidden reveal d1 transition-all duration-300">
-        <!-- Header image area -->
-        <div class="p-8 relative" style="background:linear-gradient(135deg,rgba(0,229,200,0.08),rgba(0,229,200,0.02));border-bottom:1px solid rgba(0,229,200,0.1);">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(0,229,200,0.15);border:1px solid rgba(0,229,200,0.25);">
-              <span class="material-symbols-outlined" style="color:#00e5c8;font-variation-settings:'FILL' 1;font-size:24px;">devices</span>
-            </div>
-            <div>
-              <div class="font-mono text-[9px] tracking-widest uppercase mb-1" style="color:rgba(0,229,200,0.5);">DIMENSION 01</div>
-              <h3 class="font-headline font-bold text-xl text-white">前端體驗與轉換邏輯</h3>
-            </div>
+      <div class="luxury-card rounded-none reveal d1 relative">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="p-8 border-b" style="border-color:rgba(201,160,24,0.1);">
+          <div class="roman mb-3">Dimension I</div>
+          <div class="flex items-center gap-3 mb-3">
+            <span class="material-symbols-outlined" style="color:#c9a018;font-size:24px;font-variation-settings:'FILL' 1;">devices</span>
+            <h3 class="font-sans font-semibold text-xl text-stone">前端體驗與轉換邏輯</h3>
           </div>
-          <p class="text-sm leading-relaxed" style="color:#7d9cad;">針對玩家端前台進行完整使用者旅程拆解，包含首頁、註冊、登入、存提、遊戲入口、活動入口等主要操作流程。</p>
+          <p style="color:#9a8e7a;font-size:13px;line-height:1.8;">針對玩家端前台進行完整使用者旅程拆解，包含首頁、註冊、登入、存提、遊戲入口、活動入口等主要流程。</p>
         </div>
-        <div class="p-8">
-          <div class="space-y-3">
-            <div id="d1-items"></div>
-          </div>
-          <div class="mt-6 pt-6 border-t" style="border-color:rgba(0,229,200,0.08);">
-            <p class="text-sm" style="color:#7d9cad;"><span style="color:#00e5c8;">分析目的：</span>找出天成系統在不同市場被評價為「好用」的核心原因，歸納可供前端產品優化的具體方向。</p>
-          </div>
-        </div>
+        <div class="p-8" id="d1-list"></div>
       </div>
 
       <!-- Dimension 2 -->
-      <div class="glass rounded-2xl overflow-hidden reveal d2 transition-all duration-300">
-        <div class="p-8 relative" style="background:linear-gradient(135deg,rgba(124,92,252,0.08),rgba(124,92,252,0.02));border-bottom:1px solid rgba(124,92,252,0.12);">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.25);">
-              <span class="material-symbols-outlined" style="color:#a78bfa;font-variation-settings:'FILL' 1;font-size:24px;">admin_panel_settings</span>
-            </div>
-            <div>
-              <div class="font-mono text-[9px] tracking-widest uppercase mb-1" style="color:rgba(124,92,252,0.5);">DIMENSION 02</div>
-              <h3 class="font-headline font-bold text-xl text-white">後台營運與管理機制</h3>
-            </div>
+      <div class="luxury-card rounded-none reveal d2 relative">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="p-8 border-b" style="border-color:rgba(201,160,24,0.1);">
+          <div class="roman mb-3">Dimension II</div>
+          <div class="flex items-center gap-3 mb-3">
+            <span class="material-symbols-outlined" style="color:#c9a018;font-size:24px;font-variation-settings:'FILL' 1;">admin_panel_settings</span>
+            <h3 class="font-sans font-semibold text-xl text-stone">後台營運與管理機制</h3>
           </div>
-          <p class="text-sm leading-relaxed" style="color:#7d9cad;">針對管理端與代理端後台進行營運流程拆解，評估後台工具是否能有效支援日常營運、代理管理、會員管理與風控作業。</p>
+          <p style="color:#9a8e7a;font-size:13px;line-height:1.8;">針對管理端與代理端後台進行營運流程拆解，評估後台工具是否能有效支援日常營運、代理管理、會員管理與風控作業。</p>
         </div>
-        <div class="p-8">
-          <div class="space-y-3">
-            <div id="d2-items"></div>
-          </div>
-          <div class="mt-6 pt-6 border-t" style="border-color:rgba(124,92,252,0.1);">
-            <p class="text-sm" style="color:#7d9cad;"><span style="color:#a78bfa;">分析目的：</span>盤點天成後台在營運效率、管理便利性與數據呈現上的優勢，協助貴司找出後台可優化的重點區域。</p>
-          </div>
-        </div>
+        <div class="p-8" id="d2-list"></div>
       </div>
 
     </div>
   </div>
 </section>
 
-<script>
-(function(){
-  const d1 = [
-    '玩家操作動線與頁面層級',
-    '首頁資訊架構與導流邏輯',
-    '註冊、登入、存款、提款流程順暢度',
-    '遊戲分類、搜尋、推薦與入口設計',
-    '活動頁面與促銷資訊呈現方式',
-    '手機版操作體驗與視覺易讀性',
-    '影響轉換率的關鍵介面設計',
-  ];
-  const d2 = [
-    '會員管理與會員查詢流程',
-    '代理層級、分潤與權限管理機制',
-    '存提款、優惠、活動與人工審核流程',
-    '數據報表呈現邏輯與查詢效率',
-    '日常營運操作的易用性',
-    '自動化、批次處理與提醒機制',
-    '後台權限、角色與操作風險控管',
-  ];
-  const render = (id, items, color) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = items.map(item => `
-      <div class="flex items-start gap-3 py-2 border-b border-white/4">
-        <span style="color:${color};margin-top:2px;flex-shrink:0;font-size:12px;">▸</span>
-        <span class="text-sm" style="color:#7d9cad;">${item}</span>
-      </div>
-    `).join('');
-  };
-  render('d1-items', d1, '#00e5c8');
-  render('d2-items', d2, '#a78bfa');
-})();
-</script>
-
-<!-- RESOURCES -->
-<section class="py-20 px-6 md:px-8 relative z-10" style="background:linear-gradient(180deg,transparent,rgba(124,92,252,0.02),transparent);">
+<!-- ════════════════════ RESOURCES ════════════════════ -->
+<section class="py-24 px-6 md:px-10 relative z-10" style="background:linear-gradient(180deg,transparent,rgba(201,160,24,0.015),transparent);">
   <div class="max-w-6xl mx-auto">
-    <div class="sec-label mb-3 reveal">REQUIRED RESOURCES</div>
-    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-4 reveal">專案所需資源</h2>
-    <p class="text-text-muted mb-12 max-w-2xl reveal">為確保分析深度與準確度，專案啟動前需請貴司協助提供以下資料與測試權限。</p>
 
-    <div class="grid md:grid-cols-2 gap-6">
+    <div class="mb-16 reveal">
+      <div class="sec-en mb-3">Required Resources</div>
+      <h2 class="font-serif italic font-light text-stone" style="font-size:clamp(32px,5vw,52px);">專案所需資源</h2>
+    </div>
 
-      <!-- Required -->
-      <div class="glass rounded-2xl p-8 reveal d1">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(0,229,200,0.15);border:1px solid rgba(0,229,200,0.25);">
-            <span class="material-symbols-outlined" style="color:#00e5c8;font-size:16px;font-variation-settings:'FILL' 1;">priority_high</span>
-          </div>
-          <div>
-            <h3 class="font-headline font-semibold text-white">必要項目</h3>
-            <div class="tag mt-1">天成 / 貴司 系統測試權限</div>
-          </div>
-        </div>
-        <div class="space-y-4" id="req-items"></div>
+    <div class="grid md:grid-cols-2 gap-8">
+
+      <div class="luxury-card rounded-none p-8 reveal d1 relative">
+        <div class="corner corner-tl"></div><div class="corner corner-br"></div>
+        <div class="roman mb-3">Required</div>
+        <h3 class="font-sans font-semibold text-lg text-stone mb-2">必要項目</h3>
+        <div class="gtag mb-6">天成 / 貴司 系統測試權限</div>
+        <div id="req-list"></div>
       </div>
 
-      <!-- Optional -->
-      <div class="glass rounded-2xl p-8 reveal d2">
-        <div class="flex items-center gap-3 mb-6">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(124,92,252,0.15);border:1px solid rgba(124,92,252,0.25);">
-            <span class="material-symbols-outlined" style="color:#a78bfa;font-size:16px;font-variation-settings:'FILL' 1;">add_circle</span>
-          </div>
-          <div>
-            <h3 class="font-headline font-semibold text-white">加分項目</h3>
-            <p class="text-xs mt-1" style="color:#7d9cad;">提供後可延伸分析深度</p>
-          </div>
-        </div>
-        <div class="space-y-4" id="opt-items"></div>
+      <div class="luxury-card rounded-none p-8 reveal d2 relative">
+        <div class="corner corner-tl"></div><div class="corner corner-br"></div>
+        <div class="roman mb-3">Optional</div>
+        <h3 class="font-sans font-semibold text-lg text-stone mb-2">加分項目</h3>
+        <p class="mb-6" style="color:#9a8e7a;font-size:12px;">提供後可延伸分析深度</p>
+        <div id="opt-list"></div>
       </div>
 
     </div>
   </div>
 </section>
 
-<script>
-(function(){
-  const req = [
-    ['key','玩家端 Demo 帳號與網址'],
-    ['manage_accounts','管理端 Demo 帳號與網址'],
-    ['supervisor_account','代理端 Demo 帳號與網址'],
-    ['science','可操作之測試環境與基本測試額度'],
-  ];
-  const opt = [
-    ['language','誇獎天成系統的站長真實營運網址（可分析真實設定狀況）'],
-    ['forum','業務或商務團隊收集到的客戶反饋（可深度關注回饋重點）'],
-  ];
-  const renderReq = (id, items, color) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = items.map(([icon, label]) => `
-      <div class="flex items-start gap-3">
-        <span class="material-symbols-outlined flex-shrink-0 mt-0.5" style="color:${color};font-size:18px;font-variation-settings:'FILL' 1;">${icon}</span>
-        <span class="text-sm leading-relaxed" style="color:#7d9cad;">${label}</span>
-      </div>
-    `).join('');
-  };
-  renderReq('req-items', req, '#00e5c8');
-  renderReq('opt-items', opt, '#a78bfa');
-})();
-</script>
-
-<!-- DELIVERABLES -->
-<section id="deliverables" class="py-20 px-6 md:px-8 relative z-10">
+<!-- ════════════════════ DELIVERABLES ════════════════════ -->
+<section id="deliverables" class="py-24 px-6 md:px-10 relative z-10">
   <div class="max-w-6xl mx-auto">
-    <div class="sec-label mb-3 reveal">EXPECTED DELIVERABLES</div>
-    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-4 reveal">預期產出成果</h2>
-    <p class="text-text-muted mb-12 max-w-2xl reveal">最終交付一份完整正式的《Super Swan 與 天成 包網系統拆解與產品優化分析報告》</p>
 
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="deliverable-cards"></div>
-
-    <!-- Value strip -->
-    <div class="glass rounded-2xl p-8 reveal">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="bar"></div>
-        <h3 class="font-headline font-semibold text-white">產出目標價值</h3>
-      </div>
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8" id="value-items"></div>
+    <div class="mb-16 reveal">
+      <div class="sec-en mb-3">Expected Deliverables</div>
+      <h2 class="font-serif italic font-light text-stone mb-4" style="font-size:clamp(32px,5vw,52px);">預期產出成果</h2>
+      <p style="color:#9a8e7a;font-size:15px;max-width:560px;line-height:1.8;">最終交付一份完整正式的《Super Swan 與 天成 包網系統拆解與產品優化分析報告》</p>
     </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mb-10" id="del-cards"></div>
+
+    <div class="luxury-card rounded-none p-8 md:p-10 reveal">
+      <div class="roman mb-3">Strategic Value</div>
+      <h3 class="font-serif italic text-stone text-2xl mb-6">產出目標價值</h3>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4" id="val-grid"></div>
+    </div>
+
   </div>
 </section>
 
-<script>
-(function(){
-  const cards = [
-    ['description','完整分析報告', '系統性拆解天成系統，交叉對標 Super Swan','#00e5c8'],
-    ['present_to_all','簡報呈報', '正式報告＋主管層級呈報說明','#00e5c8'],
-    ['manage_search','深入延伸分析', '呈報後一次性深入延伸分析服務','#7c5cfc'],
-  ];
-  const el = document.getElementById('deliverable-cards');
-  if (el) el.innerHTML = cards.map(([icon, title, desc, color]) => `
-    <div class="glass rounded-xl p-6 reveal transition-all duration-300">
-      <span class="material-symbols-outlined mb-4 block" style="color:${color};font-size:32px;font-variation-settings:'FILL' 1;">${icon}</span>
-      <h4 class="font-headline font-bold text-base text-white mb-2">${title}</h4>
-      <p class="text-sm leading-relaxed" style="color:#7d9cad;">${desc}</p>
-    </div>
-  `).join('');
-
-  const values = [
-    '協助決策層快速掌握市場與產品差距',
-    '讓產品團隊具備明確的優化依據',
-    '降低內部反覆討論與試錯成本',
-    '將零散競品觀察轉化為系統化產品策略',
-    '加速後續產品優化與開發排程討論',
-  ];
-  const vel = document.getElementById('value-items');
-  if (vel) vel.innerHTML = values.map(v => `
-    <div class="flex items-start gap-2">
-      <span style="color:#00e5c8;flex-shrink:0;margin-top:2px;">✓</span>
-      <span class="text-sm" style="color:#7d9cad;">${v}</span>
-    </div>
-  `).join('');
-})();
-</script>
-
-<!-- PRICING -->
-<section id="pricing" class="py-20 px-6 md:px-8 relative z-10">
+<!-- ════════════════════ PRICING ════════════════════ -->
+<section id="pricing" class="py-24 px-6 md:px-10 relative z-10">
   <div class="max-w-3xl mx-auto">
-    <div class="sec-label mb-3 text-center reveal">INVESTMENT & TIMELINE</div>
-    <h2 class="font-headline text-3xl md:text-4xl font-bold text-white mb-12 text-center reveal">報價與時程</h2>
 
-    <div class="price-card reveal">
+    <div class="mb-14 text-center reveal">
+      <div class="sec-en mb-3">Investment & Timeline</div>
+      <h2 class="font-serif italic font-light text-stone" style="font-size:clamp(32px,5vw,52px);">報價與時程</h2>
+    </div>
+
+    <div class="luxury-card rounded-none p-10 md:p-16 reveal relative">
+      <div class="corner corner-tl" style="width:24px;height:24px;"></div>
+      <div class="corner corner-tr" style="width:24px;height:24px;"></div>
+      <div class="corner corner-bl" style="width:24px;height:24px;"></div>
+      <div class="corner corner-br" style="width:24px;height:24px;"></div>
 
       <!-- Price -->
-      <div class="text-center mb-10">
-        <div class="font-mono text-[11px] tracking-widest uppercase mb-4" style="color:rgba(0,229,200,0.5);">PROJECT FEE</div>
-        <div class="font-headline font-black leading-none mb-2">
-          <span class="text-6xl md:text-7xl text-transparent bg-clip-text" style="background:linear-gradient(135deg,#00e5c8,#7c5cfc);">2,600</span>
-          <span class="text-2xl text-white ml-2">USDT</span>
-        </div>
-        <div class="laser w-40 mx-auto mt-6"></div>
+      <div class="text-center mb-12">
+        <div class="roman mb-4">Project Fee</div>
+        <div class="price-num">2,600</div>
+        <div class="font-sans font-light text-stone text-2xl mt-1 tracking-wider">USDT</div>
+        <div class="hairline w-32 mx-auto mt-8"></div>
       </div>
 
       <!-- Includes -->
-      <div class="grid md:grid-cols-3 gap-4 mb-10">
-        <div class="text-center p-4 rounded-xl" style="background:rgba(0,229,200,0.05);border:1px solid rgba(0,229,200,0.1);">
-          <span class="material-symbols-outlined mb-2 block" style="color:#00e5c8;font-variation-settings:'FILL' 1;">description</span>
-          <div class="text-sm font-semibold text-white mb-1">完整分析報告</div>
-          <div class="text-xs" style="color:#7d9cad;">系統性拆解與對標</div>
-        </div>
-        <div class="text-center p-4 rounded-xl" style="background:rgba(124,92,252,0.05);border:1px solid rgba(124,92,252,0.12);">
-          <span class="material-symbols-outlined mb-2 block" style="color:#a78bfa;font-variation-settings:'FILL' 1;">present_to_all</span>
-          <div class="text-sm font-semibold text-white mb-1">呈報說明服務</div>
-          <div class="text-xs" style="color:#7d9cad;">簡報 + 主管層級說明</div>
-        </div>
-        <div class="text-center p-4 rounded-xl" style="background:rgba(0,229,200,0.05);border:1px solid rgba(0,229,200,0.1);">
-          <span class="material-symbols-outlined mb-2 block" style="color:#00e5c8;font-variation-settings:'FILL' 1;">manage_search</span>
-          <div class="text-sm font-semibold text-white mb-1">延伸深入分析</div>
-          <div class="text-xs" style="color:#7d9cad;">呈報後一次性加深</div>
-        </div>
-      </div>
+      <div class="grid md:grid-cols-3 gap-6 mb-10" id="pkg-cards"></div>
 
       <!-- Timeline -->
-      <div class="flex items-center gap-4 p-5 rounded-xl mb-8" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-        <span class="material-symbols-outlined flex-shrink-0" style="color:#00e5c8;font-variation-settings:'FILL' 1;">schedule</span>
-        <div>
-          <div class="text-sm font-semibold text-white">執行時程：10 – 14 工作天</div>
-          <div class="text-xs mt-0.5" style="color:#7d9cad;">自雙方確認合作且所有測試帳號與需求資源提供完畢後正式啟動</div>
-        </div>
-      </div>
-
-      <!-- Note -->
-      <div class="text-center">
-        <div class="font-mono text-[10px] tracking-wider uppercase mb-6" style="color:rgba(0,229,200,0.4);">Ready to start?</div>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <div class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest" style="color:#3d5a6a;">
-            <div class="w-2 h-2 rounded-full pdot" style="background:#00e5c8;box-shadow:0 0 6px #00e5c8;"></div>
-            顧問當前接案中
+      <div class="p-5 mb-8" style="background:rgba(201,160,24,0.04);border:1px solid rgba(201,160,24,0.12);">
+        <div class="flex items-start gap-4">
+          <span class="material-symbols-outlined flex-shrink-0 mt-0.5" style="color:#c9a018;font-variation-settings:'FILL' 1;">schedule</span>
+          <div>
+            <div class="font-sans font-semibold text-stone text-sm mb-1">執行時程：10 – 14 工作天</div>
+            <div style="color:#9a8e7a;font-size:12px;line-height:1.7;">自雙方確認合作且所有測試帳號與需求資源提供完畢後正式啟動</div>
           </div>
         </div>
       </div>
 
+      <!-- Status -->
+      <div class="text-center">
+        <div class="ornament mb-4">
+          <span class="font-mono text-[9px] tracking-[.4em] uppercase" style="color:rgba(201,160,24,0.4);">Current Status</span>
+        </div>
+        <div class="flex items-center justify-center gap-2">
+          <span class="w-2 h-2 rounded-full pdot" style="background:#c9a018;box-shadow:0 0 6px #c9a018;"></span>
+          <span class="font-mono text-[10px] tracking-widest uppercase" style="color:rgba(201,160,24,0.6);">顧問當前接案中</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer style="background:#000;border-top:1px solid rgba(0,229,200,0.06);">
-  <div class="max-w-6xl mx-auto px-6 md:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
-    <div class="font-mono text-[9px] uppercase tracking-[.3em]" style="color:#3d5a6a;">© 2026 · Super Swan × 天成 競品分析提案</div>
-    <div class="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest" style="color:#3d5a6a;">
-      <span class="w-1.5 h-1.5 rounded-full pdot" style="background:#00e5c8;"></span>
-      CONFIDENTIAL PROPOSAL
-    </div>
+<footer style="border-top:1px solid rgba(201,160,24,0.08);background:#050505;">
+  <div class="max-w-6xl mx-auto px-6 md:px-10 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="font-serif italic text-base" style="color:rgba(201,160,24,0.4);">◈ Super Swan × 天成</div>
+    <div class="font-mono text-[9px] tracking-[.3em] uppercase" style="color:rgba(245,240,232,0.15);">© 2026 · Confidential Proposal</div>
   </div>
 </footer>
 
-<!-- JS -->
 <script>
-// Canvas particle network
+// ── Data ──────────────────────────────────────────────
+const skills = [
+  ['analytics','遊戲平台與包網系統分析'],
+  ['route','前端使用者旅程與轉換邏輯拆解'],
+  ['admin_panel_settings','後台營運工具與管理流程盤點'],
+  ['compare_arrows','競品功能對標與產品落差分析'],
+  ['insights','數據導向產品優化建議'],
+  ['smart_toy','AI 輔助產品與營運流程優化'],
+];
+const objectives = [
+  ['01','天成系統為何在市場上被評價為「好用」'],
+  ['02','前端體驗優勢來自哪些設計細節'],
+  ['03','後台在營運、代理、會員、報表上有哪些值得借鑑之處'],
+  ['04','貴司現有系統與天成相比，主要落差在哪裡'],
+  ['05','哪些功能或體驗優化具有最高優先級'],
+  ['06','Product Team 後續應如何安排優化方向'],
+];
+const d1 = ['玩家操作動線與頁面層級','首頁資訊架構與導流邏輯','註冊、登入、存款、提款流程順暢度','遊戲分類、搜尋、推薦與入口設計','活動頁面與促銷資訊呈現方式','手機版操作體驗與視覺易讀性','影響轉換率的關鍵介面設計'];
+const d2 = ['會員管理與會員查詢流程','代理層級、分潤與權限管理機制','存提款、優惠、活動與人工審核流程','數據報表呈現邏輯與查詢效率','日常營運操作的易用性','自動化、批次處理與提醒機制','後台權限、角色與操作風險控管'];
+const reqItems = [['key','玩家端 Demo 帳號與網址'],['manage_accounts','管理端 Demo 帳號與網址'],['supervisor_account','代理端 Demo 帳號與網址'],['science','可操作之測試環境與基本測試額度']];
+const optItems = [['language','誇獎天成系統的站長真實營運網址（可分析真實設定狀況）'],['forum','業務或商務團隊收集到的客戶反饋（可深度關注回饋重點）']];
+const deliverables = [['description','完整分析報告','系統性拆解天成系統，交叉對標 Super Swan'],['present_to_all','簡報呈報','正式報告＋主管層級呈報說明'],['manage_search','深入延伸分析','呈報後一次性深入延伸分析服務']];
+const values = ['協助決策層快速掌握市場與產品差距','讓產品團隊具備明確的優化依據','降低內部反覆討論與試錯成本','將零散競品觀察轉化為系統化產品策略','加速後續產品優化與開發排程討論'];
+const pkg = [['description','完整分析報告','系統性對標報告'],['present_to_all','呈報說明服務','簡報＋主管層說明'],['manage_search','延伸深入分析','呈報後一次加深']];
+
+// ── Render ─────────────────────────────────────────────
+const g = id => document.getElementById(id);
+
+g('skills-grid').innerHTML = skills.map(([icon, label]) => `
+  <div class="flex items-center gap-3 py-4 border-b" style="border-color:rgba(201,160,24,0.06);">
+    <span class="material-symbols-outlined flex-shrink-0" style="color:#c9a018;font-size:17px;font-variation-settings:'FILL' 1;">${icon}</span>
+    <span style="color:#9a8e7a;font-size:13px;">${label}</span>
+  </div>
+`).join('');
+
+g('obj-grid').innerHTML = objectives.map(([n, q]) => `
+  <div class="p-8 reveal" style="background:#0f0f0f;">
+    <span class="nbadge">${n}</span>
+    <p style="color:#9a8e7a;font-size:13px;line-height:1.8;">${q}</p>
+  </div>
+`).join('');
+
+const listHtml = (items) => items.map(item => `
+  <div class="flex items-start gap-3 py-3 border-b" style="border-color:rgba(201,160,24,0.06);">
+    <span style="color:#c9a018;flex-shrink:0;font-size:11px;margin-top:3px;">✦</span>
+    <span style="color:#9a8e7a;font-size:13px;line-height:1.7;">${item}</span>
+  </div>
+`).join('');
+g('d1-list').innerHTML = listHtml(d1);
+g('d2-list').innerHTML = listHtml(d2);
+
+const resHtml = (items) => items.map(([icon, label]) => `
+  <div class="flex items-start gap-3 py-3 border-b" style="border-color:rgba(201,160,24,0.06);">
+    <span class="material-symbols-outlined flex-shrink-0" style="color:#c9a018;font-size:17px;font-variation-settings:'FILL' 1;margin-top:1px;">${icon}</span>
+    <span style="color:#9a8e7a;font-size:13px;line-height:1.7;">${label}</span>
+  </div>
+`).join('');
+g('req-list').innerHTML = resHtml(reqItems);
+g('opt-list').innerHTML = resHtml(optItems);
+
+g('del-cards').innerHTML = deliverables.map(([icon, title, desc]) => `
+  <div class="luxury-card rounded-none p-7 reveal relative">
+    <div class="corner corner-tl"></div><div class="corner corner-br"></div>
+    <span class="material-symbols-outlined mb-4 block" style="color:#c9a018;font-size:28px;font-variation-settings:'FILL' 1;">${icon}</span>
+    <div class="font-sans font-semibold text-stone text-sm mb-2">${title}</div>
+    <div style="color:#9a8e7a;font-size:12px;line-height:1.7;">${desc}</div>
+  </div>
+`).join('');
+
+g('val-grid').innerHTML = values.map(v => `
+  <div class="flex items-start gap-2 py-2">
+    <span style="color:#c9a018;flex-shrink:0;font-size:10px;margin-top:3px;">✦</span>
+    <span style="color:#9a8e7a;font-size:13px;">${v}</span>
+  </div>
+`).join('');
+
+g('pkg-cards').innerHTML = pkg.map(([icon, title, desc]) => `
+  <div class="text-center p-5" style="border:1px solid rgba(201,160,24,0.1);">
+    <span class="material-symbols-outlined mb-3 block" style="color:#c9a018;font-size:26px;font-variation-settings:'FILL' 1;">${icon}</span>
+    <div class="font-sans font-semibold text-stone text-sm mb-1">${title}</div>
+    <div style="color:#9a8e7a;font-size:11px;">${desc}</div>
+  </div>
+`).join('');
+
+// ── Scroll reveal ──────────────────────────────────────
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: .08 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── Flowing gold light canvas ───────────────────────────
 (function(){
-  const cv = document.getElementById('cv');
+  const cv = document.getElementById('flowcv');
   if (!cv) return;
   const ctx = cv.getContext('2d');
-  let W, H, nodes = [];
-  const N = 55, D = 120;
+  let W, H, t = 0;
+
+  // Ribbon curves
+  const ribbons = Array.from({length: 5}, (_, i) => ({
+    phase: i * Math.PI * 0.42,
+    speed: 0.0006 + i * 0.0002,
+    amp: 0.12 + i * 0.06,
+    yBase: 0.3 + i * 0.12,
+    width: 120 + i * 60,
+    alpha: 0.04 + i * 0.01,
+    color: i % 2 === 0 ? [201, 160, 24] : [240, 200, 80],
+  }));
+
+  // Particles
+  const particles = Array.from({length: 80}, () => ({
+    x: Math.random(), y: Math.random(),
+    vx: (Math.random() - 0.5) * 0.00015,
+    vy: -0.00008 - Math.random() * 0.0001,
+    r: Math.random() * 2 + 0.5,
+    alpha: Math.random() * 0.6 + 0.2,
+    life: Math.random(),
+    maxLife: 0.6 + Math.random() * 0.4,
+    twinkle: Math.random() * Math.PI * 2,
+  }));
+
   function resize() {
     W = cv.offsetWidth; H = cv.offsetHeight;
     cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
     ctx.scale(devicePixelRatio, devicePixelRatio);
   }
-  function init() {
-    nodes = Array.from({length:N}, () => ({
-      x: Math.random()*W, y: Math.random()*H,
-      vx: (Math.random()-.5)*.3, vy: (Math.random()-.5)*.3,
-      r: Math.random()*1.2+.4,
-    }));
-  }
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    for (let i=0; i<nodes.length; i++) {
-      for (let j=i+1; j<nodes.length; j++) {
-        const dx=nodes[i].x-nodes[j].x, dy=nodes[i].y-nodes[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if (d < D) {
-          ctx.strokeStyle = `rgba(0,229,200,${(1-d/D)*.3})`;
-          ctx.lineWidth = .35;
-          ctx.beginPath(); ctx.moveTo(nodes[i].x,nodes[i].y); ctx.lineTo(nodes[j].x,nodes[j].y); ctx.stroke();
-        }
-      }
+
+  function drawRibbon(r) {
+    const pts = [];
+    const steps = 80;
+    for (let i = 0; i <= steps; i++) {
+      const px = (i / steps) * W;
+      const wave1 = Math.sin(i / steps * Math.PI * 2.5 + t * r.speed * 1000 + r.phase);
+      const wave2 = Math.sin(i / steps * Math.PI * 1.2 + t * r.speed * 700 + r.phase * 1.3);
+      const py = r.yBase * H + wave1 * r.amp * H * 0.6 + wave2 * r.amp * H * 0.4;
+      pts.push([px, py]);
     }
-    nodes.forEach(n => {
-      ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(0,229,200,0.65)';
-      ctx.shadowBlur = 8; ctx.shadowColor = '#00e5c8';
-      ctx.fill(); ctx.shadowBlur = 0;
-      n.x += n.vx; n.y += n.vy;
-      if (n.x<0||n.x>W) n.vx*=-1;
-      if (n.y<0||n.y>H) n.vy*=-1;
+
+    // Draw glowing ribbon
+    for (let w = r.width; w > 0; w -= 8) {
+      const frac = w / r.width;
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) {
+        const mx = (pts[i-1][0] + pts[i][0]) / 2;
+        const my = (pts[i-1][1] + pts[i][1]) / 2;
+        ctx.quadraticCurveTo(pts[i-1][0], pts[i-1][1], mx, my);
+      }
+      const [cr, cg, cb] = r.color;
+      ctx.strokeStyle = `rgba(${cr},${cg},${cb},${r.alpha * frac * frac})`;
+      ctx.lineWidth = w * 0.06;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // Bright core line
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) {
+      const mx = (pts[i-1][0] + pts[i][0]) / 2;
+      const my = (pts[i-1][1] + pts[i][1]) / 2;
+      ctx.quadraticCurveTo(pts[i-1][0], pts[i-1][1], mx, my);
+    }
+    const [cr, cg, cb] = r.color;
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${r.alpha * 4})`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  function drawParticles() {
+    particles.forEach(p => {
+      p.life += 0.003;
+      p.twinkle += 0.04;
+      if (p.life > p.maxLife) {
+        p.x = Math.random(); p.y = 0.8 + Math.random() * 0.3;
+        p.life = 0; p.maxLife = 0.6 + Math.random() * 0.4;
+        p.alpha = Math.random() * 0.6 + 0.2;
+        p.r = Math.random() * 2 + 0.5;
+      }
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
+
+      const lifeAlpha = Math.sin(p.life / p.maxLife * Math.PI);
+      const twinkleAlpha = 0.5 + 0.5 * Math.sin(p.twinkle);
+      const a = p.alpha * lifeAlpha * twinkleAlpha;
+
+      const px = p.x * W, py = p.y * H;
+
+      // Glow
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, p.r * 4);
+      grad.addColorStop(0, `rgba(240,200,80,${a * 0.6})`);
+      grad.addColorStop(1, `rgba(201,160,24,0)`);
+      ctx.beginPath(); ctx.arc(px, py, p.r * 4, 0, Math.PI*2);
+      ctx.fillStyle = grad; ctx.fill();
+
+      // Core dot
+      ctx.beginPath(); ctx.arc(px, py, p.r * twinkleAlpha, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,230,100,${a})`;
+      ctx.fill();
     });
+  }
+
+  let last = 0;
+  function draw(ts) {
+    t = ts;
+    ctx.clearRect(0, 0, W, H);
+    ribbons.forEach(r => drawRibbon(r));
+    drawParticles();
     requestAnimationFrame(draw);
   }
-  resize(); init(); draw();
-  window.addEventListener('resize', () => { resize(); });
-})();
 
-// Scroll reveal
-(function(){
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
-  }, { threshold: .1 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  resize();
+  requestAnimationFrame(draw);
+  window.addEventListener('resize', resize);
 })();
 </script>
 
