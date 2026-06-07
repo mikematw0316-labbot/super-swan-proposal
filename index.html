@@ -321,15 +321,44 @@ nav { background: rgba(248,245,240,0.9); backdrop-filter: blur(20px); border-bot
 
 <!-- ════════════════════ RESOURCES ════════════════════ -->
 <section class="py-16 px-6 md:px-10 grad-bg-subtle relative z-10">
-  <div class="max-w-4xl mx-auto">
-    <img src="img-resources.jpg" alt="專案所需資源" style="width:100%;border-radius:16px;border:1.5px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;">
+  <div class="max-w-6xl mx-auto">
+    <div class="mb-14 reveal">
+      <div class="sec-label mb-3">Required Resources</div>
+      <h2 style="font-family:'Space Grotesk';font-weight:800;font-size:clamp(28px,4vw,48px);line-height:1.1;">專案所需資源</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="nb-card rounded-2xl p-8 reveal d1">
+        <div class="pill pill-dark mb-4">必要項目</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;margin-bottom:4px;opacity:.5;">提供完整雙系統對標分析所需</div>
+        <div class="h-divider mb-6" style="background:#eee;height:1px;"></div>
+        <div class="space-y-3" id="req-list"></div>
+        <div class="mt-5 rounded-xl p-4" style="background:#fffbe6;border:1px solid #ffe066;">
+          <div style="font-size:13px;line-height:1.7;color:#555;"><strong>目的：</strong>用於進行 TT 與 TCG 雙系統逐項對標比較，涵蓋前後台流程、操作邏輯與對應網站體驗。</div>
+        </div>
+      </div>
+      <div class="nb-card rounded-2xl p-8 reveal d2">
+        <div class="pill pill-yellow mb-4">非必要項目</div>
+        <div style="font-family:'Space Grotesk';font-weight:700;font-size:14px;margin-bottom:4px;opacity:.5;">提供後可延伸比較同市場經營差異</div>
+        <div class="h-divider mb-6" style="background:#eee;height:1px;"></div>
+        <div class="space-y-3" id="opt-list"></div>
+      </div>
+    </div>
   </div>
 </section>
 
 <!-- ════════════════════ DELIVERABLES ════════════════════ -->
 <section id="deliverables" class="py-24 px-6 md:px-10 relative z-10">
-  <div class="max-w-4xl mx-auto">
-    <img src="img-deliverables.jpg" alt="預期產出成果" style="width:100%;border-radius:16px;border:1.5px solid #1a1a1a;box-shadow:5px 5px 0 #1a1a1a;">
+  <div class="max-w-6xl mx-auto">
+    <div class="mb-14 reveal">
+      <div class="sec-label mb-3">Expected Deliverables</div>
+      <h2 style="font-family:'Space Grotesk';font-weight:800;font-size:clamp(28px,4vw,48px);line-height:1.1;">預期產出成果</h2>
+      <p style="font-size:15px;line-height:1.8;max-width:580px;margin-top:12px;">最終交付一份完整正式的<br><span style="font-family:'Space Grotesk';font-weight:800;font-size:clamp(16px,2.2vw,22px);color:#ff3ea5;display:inline-block;margin-top:6px;border-bottom:2.5px solid #ff3ea5;padding-bottom:2px;">《TTWD 與 TT 包網系統拆解比較分析報告》</span></p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mb-10" id="del-cards"></div>
+    <div class="nb-card rounded-2xl p-8 md:p-10 reveal">
+      <div style="font-family:'Space Grotesk';font-weight:800;font-size:20px;margin-bottom:16px;">產出目標價值</div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-3" id="val-grid"></div>
+    </div>
   </div>
 </section>
 
